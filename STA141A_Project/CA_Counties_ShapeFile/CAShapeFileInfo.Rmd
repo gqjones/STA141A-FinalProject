@@ -1,0 +1,15 @@
+---
+title: "Shapefile California"
+author: "Brooke Kerstein"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+library(mapview)
+library(sp)
+
+shape <- sf::read_sf(dsn = ".", layer = "CA_Counties_TIGER2016")
+counties <- shape['NAME']
+mapview(counties)
+```
