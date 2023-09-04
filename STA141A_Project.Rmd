@@ -1,0 +1,67 @@
+---
+title: "STA141A_Project"
+author: "Brooke Kerstein"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r warning=F,message=F}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(hrbrthemes)
+library(gganimate)
+library(png)
+library(gifski)
+library(ggridges)
+library(tidyverse)
+library(tibble)
+library(mapview)
+library(sp)
+```
+
+```{r}
+YoloFood <- read.csv("FeedAmericaInfo.csv",check.names = F)
+YoloFood %>%
+  filter(State=="CA") %>%
+  filter(Year%in%c(2020,2021))
+
+```
+
+```{r}
+FoodStamp <- read.csv("FoodStampInfo.csv",check.names = F)
+
+ComparableCounties <- gsub("\\,.*","",colnames(FoodStamp[-1]))
+ComparableCounties <- unique(ComparableCounties)
+
+FoodStamp %>%
+  .[,!grepl("Margin of Error", colnames(.))] %>%
+  .[,!grepl("Percent", colnames(.))] -> RawFoodStamp
+
+TidyFoodStamp <- data.frame(t(RawFoodStamp[-1]))
+colnames(TidyFoodStamp) <- RawFoodStamp[, 1]
+
+TidyFoodStamp <- cbind(TidyFoodStamp,"county"=gsub("\\!!.*","",rownames(TidyFoodStamp)))
+
+# getwd()
+# [1] "/Users/brookekerstein/Desktop/School/Sophomore Year 2022-2023/SS 2023/STA 141A/STA 141A Homework/STA141A_HW4"
+# > write.csv(TidyFoodStamp,"TidyFoodStamp.csv")
+```
+
+```{r}
+TidyFeedAmerica <- read.csv("MMG_Data_CA.csv")
+
+TidyFeedAmerica <- TidyFeedAmerica %>% filter(year==2021)
+
+TidyFeedAmerica$county <- gsub(" County","",TidyFeedAmerica$county)
+```
+
+```{r}
+shape <- sf::read_sf(dsn = ".", layer = "CA_Counties_TIGER2016")
+counties <- shape['NAME'] %>% arrange(NAME)
+colnames(counties)[1] <- "county"
+counties$county
+ counties <- counties %>% inner_join(TidyFeedAmerica,by='county')
+
+mapview(counties, zcol = "overall_food_insecurity_rate")
+```
