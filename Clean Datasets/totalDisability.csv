@@ -1,0 +1,442 @@
+"","year","county","Percent with a disability"
+"1",2010,"Alameda County",8.7
+"2",2010,"Butte County",16.1
+"3",2010,"Contra Costa County",9.4
+"4",2010,"El Dorado County",13.1
+"5",2010,"Fresno County",10.8
+"6",2010,"Humboldt County",15.4
+"7",2010,"Imperial County",12.2
+"8",2010,"Kern County",12.1
+"9",2010,"Kings County",8.4
+"10",2010,"Lake County",18.2
+"11",2010,"Los Angeles County",9.3
+"12",2010,"Madera County",11.5
+"13",2010,"Marin County",8.9
+"14",2010,"Mendocino County",14.4
+"15",2010,"Merced County",14.6
+"16",2010,"Monterey County",7.2
+"17",2010,"Napa County",11.5
+"18",2010,"Nevada County",12.6
+"19",2010,"Orange County",7.3
+"20",2010,"Placer County",11
+"21",2010,"Riverside County",10.1
+"22",2010,"Sacramento County",13.4
+"23",2010,"San Bernardino County",10.6
+"24",2010,"San Diego County",9.1
+"25",2010,"San Francisco County",10.6
+"26",2010,"San Joaquin County",11.5
+"27",2010,"San Luis Obispo County",11.3
+"28",2010,"San Mateo County",7.7
+"29",2010,"Santa Barbara County",11
+"30",2010,"Santa Clara County",7.9
+"31",2010,"Santa Cruz County",9.3
+"32",2010,"Shasta County",19
+"33",2010,"Solano County",9.9
+"34",2010,"Sonoma County",10.8
+"35",2010,"Stanislaus County",12.3
+"36",2010,"Sutter County",14.6
+"37",2010,"Tulare County",9.9
+"38",2010,"Ventura County",9.5
+"39",2010,"Yolo County",9.6
+"40",2010,"Yuba County",14.8
+"41",2011,"Alameda County",9.1
+"42",2011,"Butte County",16.5
+"43",2011,"Contra Costa County",10.1
+"44",2011,"El Dorado County",10.9
+"45",2011,"Fresno County",11.6
+"46",2011,"Humboldt County",15.7
+"47",2011,"Imperial County",12.4
+"48",2011,"Kern County",11.6
+"49",2011,"Kings County",10.1
+"50",2011,"Lake County",21.6
+"51",2011,"Los Angeles County",9.4
+"52",2011,"Madera County",14.1
+"53",2011,"Marin County",8.3
+"54",2011,"Mendocino County",16.1
+"55",2011,"Merced County",15.8
+"56",2011,"Monterey County",8.6
+"57",2011,"Napa County",11
+"58",2011,"Nevada County",13.2
+"59",2011,"Orange County",7.6
+"60",2011,"Placer County",10.3
+"61",2011,"Riverside County",10.6
+"62",2011,"Sacramento County",12.6
+"63",2011,"San Bernardino County",11.2
+"64",2011,"San Diego County",9
+"65",2011,"San Francisco County",10.4
+"66",2011,"San Joaquin County",11.5
+"67",2011,"San Luis Obispo County",10.8
+"68",2011,"San Mateo County",7.9
+"69",2011,"Santa Barbara County",10.5
+"70",2011,"Santa Clara County",7.8
+"71",2011,"Santa Cruz County",8.8
+"72",2011,"Shasta County",17.5
+"73",2011,"Solano County",11
+"74",2011,"Sonoma County",10.9
+"75",2011,"Stanislaus County",13.4
+"76",2011,"Sutter County",14.4
+"77",2011,"Tulare County",10.5
+"78",2011,"Ventura County",10.2
+"79",2011,"Yolo County",10.7
+"80",2011,"Yuba County",17.5
+"81",2012,"Alameda County",9.1
+"82",2012,"Butte County",18.5
+"83",2012,"Contra Costa County",10.2
+"84",2012,"El Dorado County",11.4
+"85",2012,"Fresno County",11.7
+"86",2012,"Humboldt County",17.1
+"87",2012,"Imperial County",14.7
+"88",2012,"Kern County",11
+"89",2012,"Kings County",10.9
+"90",2012,"Lake County",21.6
+"91",2012,"Los Angeles County",9.5
+"92",2012,"Madera County",12.6
+"93",2012,"Marin County",8
+"94",2012,"Mendocino County",15.4
+"95",2012,"Merced County",15.9
+"96",2012,"Monterey County",8.8
+"97",2012,"Napa County",10.2
+"98",2012,"Nevada County",14.2
+"99",2012,"Orange County",8.1
+"100",2012,"Placer County",10.8
+"101",2012,"Riverside County",10.7
+"102",2012,"Sacramento County",12.5
+"103",2012,"San Bernardino County",10.8
+"104",2012,"San Diego County",9.6
+"105",2012,"San Francisco County",10.4
+"106",2012,"San Joaquin County",11.6
+"107",2012,"San Luis Obispo County",10.6
+"108",2012,"San Mateo County",7.5
+"109",2012,"Santa Barbara County",9.8
+"110",2012,"Santa Clara County",7.7
+"111",2012,"Santa Cruz County",8.9
+"112",2012,"Shasta County",18
+"113",2012,"Solano County",11.7
+"114",2012,"Sonoma County",10.9
+"115",2012,"Stanislaus County",13.2
+"116",2012,"Sutter County",12.9
+"117",2012,"Tulare County",10.8
+"118",2012,"Ventura County",9.8
+"119",2012,"Yolo County",11
+"120",2012,"Yuba County",16.1
+"121",2013,"Alameda County",9.6
+"122",2013,"Butte County",18.3
+"123",2013,"Contra Costa County",11.4
+"124",2013,"El Dorado County",12.8
+"125",2013,"Fresno County",12.8
+"126",2013,"Humboldt County",16.9
+"127",2013,"Imperial County",13.4
+"128",2013,"Kern County",11.5
+"129",2013,"Kings County",11.3
+"130",2013,"Lake County",22.7
+"131",2013,"Los Angeles County",9.9
+"132",2013,"Madera County",12.3
+"133",2013,"Marin County",10.3
+"134",2013,"Mendocino County",16.7
+"135",2013,"Merced County",17.1
+"136",2013,"Monterey County",8.8
+"137",2013,"Napa County",11.6
+"138",2013,"Nevada County",15.8
+"139",2013,"Orange County",8.7
+"140",2013,"Placer County",11.7
+"141",2013,"Riverside County",11.5
+"142",2013,"Sacramento County",12.8
+"143",2013,"San Bernardino County",10.8
+"144",2013,"San Diego County",9.8
+"145",2013,"San Francisco County",11
+"146",2013,"San Joaquin County",12.6
+"147",2013,"San Luis Obispo County",11
+"148",2013,"San Mateo County",7.8
+"149",2013,"Santa Barbara County",9.3
+"150",2013,"Santa Clara County",7.7
+"151",2013,"Santa Cruz County",9.2
+"152",2013,"Shasta County",18.8
+"153",2013,"Solano County",11.3
+"154",2013,"Sonoma County",11.5
+"155",2013,"Stanislaus County",13.6
+"156",2013,"Sutter County",12
+"157",2013,"Tulare County",12.4
+"158",2013,"Ventura County",10.5
+"159",2013,"Yolo County",11.5
+"160",2013,"Yuba County",16.8
+"161",2013,"Alameda County",9.6
+"162",2013,"Butte County",18.3
+"163",2013,"Contra Costa County",11.4
+"164",2013,"El Dorado County",12.8
+"165",2013,"Fresno County",12.8
+"166",2013,"Humboldt County",16.9
+"167",2013,"Imperial County",13.4
+"168",2013,"Kern County",11.5
+"169",2013,"Kings County",11.3
+"170",2013,"Lake County",22.7
+"171",2013,"Los Angeles County",9.9
+"172",2013,"Madera County",12.3
+"173",2013,"Marin County",10.3
+"174",2013,"Mendocino County",16.7
+"175",2013,"Merced County",17.1
+"176",2013,"Monterey County",8.8
+"177",2013,"Napa County",11.6
+"178",2013,"Nevada County",15.8
+"179",2013,"Orange County",8.7
+"180",2013,"Placer County",11.7
+"181",2013,"Riverside County",11.5
+"182",2013,"Sacramento County",12.8
+"183",2013,"San Bernardino County",10.8
+"184",2013,"San Diego County",9.8
+"185",2013,"San Francisco County",11
+"186",2013,"San Joaquin County",12.6
+"187",2013,"San Luis Obispo County",11
+"188",2013,"San Mateo County",7.8
+"189",2013,"Santa Barbara County",9.3
+"190",2013,"Santa Clara County",7.7
+"191",2013,"Santa Cruz County",9.2
+"192",2013,"Shasta County",18.8
+"193",2013,"Solano County",11.3
+"194",2013,"Sonoma County",11.5
+"195",2013,"Stanislaus County",13.6
+"196",2013,"Sutter County",12
+"197",2013,"Tulare County",12.4
+"198",2013,"Ventura County",10.5
+"199",2013,"Yolo County",11.5
+"200",2013,"Yuba County",16.8
+"201",2014,"Alameda County",9.6
+"202",2014,"Butte County",16
+"203",2014,"Contra Costa County",11
+"204",2014,"El Dorado County",13.5
+"205",2014,"Fresno County",13.1
+"206",2014,"Humboldt County",16.7
+"207",2014,"Imperial County",13.9
+"208",2014,"Kern County",11.2
+"209",2014,"Kings County",14.1
+"210",2014,"Lake County",19.4
+"211",2014,"Los Angeles County",9.8
+"212",2014,"Madera County",14.2
+"213",2014,"Marin County",8.4
+"214",2014,"Mendocino County",17.4
+"215",2014,"Merced County",16.3
+"216",2014,"Monterey County",9.2
+"217",2014,"Napa County",11.7
+"218",2014,"Nevada County",14.8
+"219",2014,"Orange County",8.6
+"220",2014,"Placer County",11
+"221",2014,"Riverside County",11.1
+"222",2014,"Sacramento County",13.4
+"223",2014,"San Bernardino County",10.9
+"224",2014,"San Diego County",9.7
+"225",2014,"San Francisco County",10.4
+"226",2014,"San Joaquin County",11.5
+"227",2014,"San Luis Obispo County",11.9
+"228",2014,"San Mateo County",8.7
+"229",2014,"Santa Barbara County",10.1
+"230",2014,"Santa Clara County",7.6
+"231",2014,"Santa Cruz County",8.6
+"232",2014,"Shasta County",17.9
+"233",2014,"Solano County",12
+"234",2014,"Sonoma County",12
+"235",2014,"Stanislaus County",13.7
+"236",2014,"Sutter County",13.4
+"237",2014,"Tulare County",11.3
+"238",2014,"Ventura County",10.8
+"239",2014,"Yolo County",10.1
+"240",2014,"Yuba County",17.5
+"241",2015,"Alameda County",9.9
+"242",2015,"Butte County",16.6
+"243",2015,"Contra Costa County",11.5
+"244",2015,"El Dorado County",13.1
+"245",2015,"Fresno County",13.2
+"246",2015,"Humboldt County",17
+"247",2015,"Imperial County",15.3
+"248",2015,"Kern County",10.5
+"249",2015,"Kings County",11.6
+"250",2015,"Lake County",20.6
+"251",2015,"Los Angeles County",9.8
+"252",2015,"Madera County",11.9
+"253",2015,"Marin County",9.5
+"254",2015,"Mendocino County",17.6
+"255",2015,"Merced County",13.4
+"256",2015,"Monterey County",9.5
+"257",2015,"Napa County",10.1
+"258",2015,"Nevada County",13.8
+"259",2015,"Orange County",8.6
+"260",2015,"Placer County",11.3
+"261",2015,"Riverside County",11.2
+"262",2015,"Sacramento County",12.4
+"263",2015,"San Bernardino County",10.5
+"264",2015,"San Diego County",10.1
+"265",2015,"San Francisco County",10.7
+"266",2015,"San Joaquin County",12.1
+"267",2015,"San Luis Obispo County",11.8
+"268",2015,"San Mateo County",8.4
+"269",2015,"Santa Barbara County",9.2
+"270",2015,"Santa Clara County",8
+"271",2015,"Santa Cruz County",11.5
+"272",2015,"Shasta County",19.5
+"273",2015,"Solano County",12.2
+"274",2015,"Sonoma County",12.9
+"275",2015,"Stanislaus County",13.4
+"276",2015,"Sutter County",14.8
+"277",2015,"Tulare County",13.3
+"278",2015,"Ventura County",10.5
+"279",2015,"Yolo County",8.8
+"280",2015,"Yuba County",16.5
+"281",2016,"Alameda County",9.6
+"282",2016,"Butte County",18.6
+"283",2016,"Contra Costa County",11.6
+"284",2016,"El Dorado County",15
+"285",2016,"Fresno County",12.2
+"286",2016,"Humboldt County",17.1
+"287",2016,"Imperial County",13.6
+"288",2016,"Kern County",11
+"289",2016,"Kings County",12.3
+"290",2016,"Lake County",22.5
+"291",2016,"Los Angeles County",10.2
+"292",2016,"Madera County",12.6
+"293",2016,"Marin County",8.6
+"294",2016,"Mendocino County",16.8
+"295",2016,"Merced County",14.1
+"296",2016,"Monterey County",9
+"297",2016,"Napa County",12.6
+"298",2016,"Nevada County",15
+"299",2016,"Orange County",8.5
+"300",2016,"Placer County",10.7
+"301",2016,"Riverside County",12
+"302",2016,"Sacramento County",12.2
+"303",2016,"San Bernardino County",11.5
+"304",2016,"San Diego County",10.1
+"305",2016,"San Francisco County",11
+"306",2016,"San Joaquin County",13.2
+"307",2016,"San Luis Obispo County",10.7
+"308",2016,"San Mateo County",8.6
+"309",2016,"Santa Barbara County",10.3
+"310",2016,"Santa Clara County",7.9
+"311",2016,"Santa Cruz County",12.1
+"312",2016,"Shasta County",17.8
+"313",2016,"Solano County",13.1
+"314",2016,"Sonoma County",12.5
+"315",2016,"Stanislaus County",13.1
+"316",2016,"Sutter County",14.4
+"317",2016,"Tulare County",13.9
+"318",2016,"Ventura County",11.5
+"319",2016,"Yolo County",9.4
+"320",2016,"Yuba County",15.8
+"321",2017,"Alameda County",9
+"322",2017,"Butte County",18.4
+"323",2017,"Contra Costa County",11.7
+"324",2017,"El Dorado County",12.4
+"325",2017,"Fresno County",14.6
+"326",2017,"Humboldt County",16.2
+"327",2017,"Imperial County",15.4
+"328",2017,"Kern County",11.7
+"329",2017,"Kings County",12
+"330",2017,"Lake County",22.3
+"331",2017,"Los Angeles County",9.8
+"332",2017,"Madera County",13.1
+"333",2017,"Marin County",9.2
+"334",2017,"Mendocino County",17.3
+"335",2017,"Merced County",13.4
+"336",2017,"Monterey County",8.1
+"337",2017,"Napa County",13.1
+"338",2017,"Nevada County",14.8
+"339",2017,"Orange County",8.6
+"340",2017,"Placer County",10.8
+"341",2017,"Riverside County",11.7
+"342",2017,"Sacramento County",11.8
+"343",2017,"San Bernardino County",11.5
+"344",2017,"San Diego County",9.6
+"345",2017,"San Francisco County",9.8
+"346",2017,"San Joaquin County",13.1
+"347",2017,"San Luis Obispo County",10.9
+"348",2017,"San Mateo County",8.2
+"349",2017,"Santa Barbara County",9.7
+"350",2017,"Santa Clara County",8.2
+"351",2017,"Santa Cruz County",11.3
+"352",2017,"Shasta County",17.7
+"353",2017,"Solano County",13
+"354",2017,"Sonoma County",11.9
+"355",2017,"Stanislaus County",13.1
+"356",2017,"Sutter County",14.7
+"357",2017,"Tulare County",11.1
+"358",2017,"Ventura County",11.5
+"359",2017,"Yolo County",10.4
+"360",2017,"Yuba County",14.4
+"361",2018,"Alameda County",8.6
+"362",2018,"Butte County",16.7
+"363",2018,"Contra Costa County",11.1
+"364",2018,"El Dorado County",12.5
+"365",2018,"Fresno County",13.1
+"366",2018,"Humboldt County",16
+"367",2018,"Imperial County",12.7
+"368",2018,"Kern County",11.8
+"369",2018,"Kings County",11.7
+"370",2018,"Lake County",17.5
+"371",2018,"Los Angeles County",9.9
+"372",2018,"Madera County",13.9
+"373",2018,"Marin County",8.6
+"374",2018,"Mendocino County",16.8
+"375",2018,"Merced County",11.8
+"376",2018,"Monterey County",8.8
+"377",2018,"Napa County",13.1
+"378",2018,"Nevada County",14.5
+"379",2018,"Orange County",8.4
+"380",2018,"Placer County",10.5
+"381",2018,"Riverside County",11.2
+"382",2018,"Sacramento County",11.1
+"383",2018,"San Bernardino County",10.4
+"384",2018,"San Diego County",9.8
+"385",2018,"San Francisco County",9.9
+"386",2018,"San Joaquin County",12.5
+"387",2018,"San Luis Obispo County",11.9
+"388",2018,"San Mateo County",8.1
+"389",2018,"Santa Barbara County",10.5
+"390",2018,"Santa Clara County",8
+"391",2018,"Santa Cruz County",13
+"392",2018,"Shasta County",18.7
+"393",2018,"Solano County",11.4
+"394",2018,"Sonoma County",11.7
+"395",2018,"Stanislaus County",13.5
+"396",2018,"Sutter County",12
+"397",2018,"Tulare County",11.4
+"398",2018,"Ventura County",10.6
+"399",2018,"Yolo County",9.2
+"400",2018,"Yuba County",16.3
+"401",2019,"Alameda County",8.7
+"402",2019,"Butte County",17.6
+"403",2019,"Contra Costa County",10.7
+"404",2019,"El Dorado County",13.4
+"405",2019,"Fresno County",13.3
+"406",2019,"Humboldt County",17.7
+"407",2019,"Imperial County",14.4
+"408",2019,"Kern County",11
+"409",2019,"Kings County",12.8
+"410",2019,"Lake County",19.1
+"411",2019,"Los Angeles County",9.9
+"412",2019,"Madera County",13.3
+"413",2019,"Marin County",9.8
+"414",2019,"Mendocino County",18.7
+"415",2019,"Merced County",13.2
+"416",2019,"Monterey County",8.9
+"417",2019,"Napa County",12.3
+"418",2019,"Nevada County",10.1
+"419",2019,"Orange County",8.6
+"420",2019,"Placer County",10.4
+"421",2019,"Riverside County",12
+"422",2019,"Sacramento County",12
+"423",2019,"San Bernardino County",11.4
+"424",2019,"San Diego County",9.8
+"425",2019,"San Francisco County",9.8
+"426",2019,"San Joaquin County",12.6
+"427",2019,"San Luis Obispo County",13.5
+"428",2019,"San Mateo County",7.6
+"429",2019,"Santa Barbara County",10
+"430",2019,"Santa Clara County",8.3
+"431",2019,"Santa Cruz County",11.6
+"432",2019,"Shasta County",19.6
+"433",2019,"Solano County",11.7
+"434",2019,"Sonoma County",11
+"435",2019,"Stanislaus County",13
+"436",2019,"Sutter County",12.8
+"437",2019,"Tehama County",18.6
+"438",2019,"Tulare County",11.1
+"439",2019,"Ventura County",10.8
+"440",2019,"Yolo County",11.1
+"441",2019,"Yuba County",12.7
