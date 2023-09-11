@@ -1,0 +1,6 @@
+Light Green: #D0D8B6
+Green Brown: #A09D79
+Dark Green: #4E5745
+Blue Gray: #5D6A76
+Dark Red: #AC5B4C
+Tan Background: #E5DACF
