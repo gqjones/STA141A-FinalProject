@@ -1,0 +1,9 @@
+Shapefiles: US Census Bureau, Geography Division 
+	Link: https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html1
+
+Unemployment Data: EDD - Labor Market Information Division
+	Link: https://data.edd.ca.gov/Labor-Force-and-Unemployment-Rates/Local-Area-Unemployment-Statistics-LAUS-/e6gw-gvii
+
+Income Data: CA Open Data Portal
+	Link: https://data.ca.gov/dataset/b-6-comparison-by-county2
+
