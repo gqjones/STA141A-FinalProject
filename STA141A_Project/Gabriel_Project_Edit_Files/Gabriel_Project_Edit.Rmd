@@ -9,7 +9,8 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r include=FALSE}
+**Libraries**
+```{r warning=FALSE, message=FALSE}
 library(MASS)
 library(knitr)
 library(dplyr)
@@ -26,6 +27,7 @@ library(patchwork)
 library(ddpcr)
 library(caret)
 library(car)
+library(paletteer)
 ```
 
 **Import Data**
@@ -51,6 +53,10 @@ unemploymentdata <- janitor::clean_names(unemploymentdata)
 
 incomedata <- readr::read_csv("incomedata.csv", show_col_types = FALSE)
 incomedata <- janitor::clean_names(incomedata)
+
+disabilitydata <- readr::read_csv("totalDisability.csv")
+disabilitydata <- select(disabilitydata, -"...1")
+disabilitydata <- janitor::clean_names(disabilitydata)
 ```
 
 **Merging Data**
@@ -305,7 +311,7 @@ dol_to_num <- function(x){
 **Add Compare Group Column**
 ```{r}
 cleandata <- cleandata%>%
-  mutate("compare_group"=ifelse(.$year < 2019, 1, 2))
+  mutate("compare_group"=ifelse(.$year < 2020, 1, 2))
 cleandata$compare_group <- as.factor(cleandata$compare_group)
 ```
 
@@ -315,7 +321,9 @@ graph_food_insecure_persons <- function(c){
   cleandata%>%
     filter(county==c)%>%
     ggplot(aes(as.factor(year), number_of_food_insecure_persons_overall, fill=compare_group))+
-    geom_col(show.legend=F)+
+    geom_col(show.legend = FALSE)+
+    scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+    theme_minimal()+
     labs(title=paste("Food Insecure Persons for", c),
          x="Year",
          y="Overall # Of Food Insecure Persons")
@@ -349,14 +357,16 @@ cleandata$longitude <- long
 cleandata%>%
   group_by(county)%>%
   ggplot(aes(x=as.factor(year), per_to_num(overall_food_insecurity_rate), fill=compare_group))+
-  geom_boxplot()+
-  scale_fill_discrete(name = "Comparison Group", labels = c("2010-2018", "2019-2021"))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Overall Food Insecurity Rate per Year",
        x="Year",
        y="Food Insecurity Rate (%)")
 ```
 
-**SNAP Data**
+**[NOT USED] SNAP Data**
 ```{r}
 cleandata <- cleandata%>%
   # Average Snap Benefit Data Gathered From https://www.fns.usda.gov/pd/supplemental-nutrition-assistance-program-snap
@@ -384,19 +394,21 @@ snapdata <- cleandata%>%
   select(county, year, overall_food_insecurity_rate, cost_per_meal, compare_group, snap_meal_cost_diff)
 ```
 
-**Remaining Meal Cost After SNAP Benefits per year**
+**[NOT USED] Remaining Meal Cost After SNAP Benefits per year**
 ```{r}
 cleandata%>%
   group_by(county)%>%
   ggplot(aes(x=as.factor(year), snap_meal_cost_diff, fill=compare_group))+
-  geom_boxplot()+
-  scale_fill_discrete(name = "Comparison Group", labels = c("2010-2018", "2019-2021"))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="SNAP Benefits vs Meal Cost per Year",
        x="Year",
        y="Meal Cost - SNAP Benefits($)")
 ```
 
-**Linear Model (food insecurity ~ diff btwn snap benefits and meal cost)**
+**[NOT USED] Linear Model (food insecurity ~ diff btwn snap benefits and meal cost)**
 ```{r}
 g1 <- snapdata%>%
   filter(compare_group==1)%>%
@@ -425,7 +437,6 @@ g2 <- snapdata%>%
 g1
 g2
 ```
-SNAP Benefits & Meal Cost do not seem to have an impact on overall food insecurity.
 
 **Unemployment Data Cleaning**
 ```{r}
@@ -451,8 +462,11 @@ cleandata <- merge(cleandata, unemploymentdataclean)
 ```{r}
 cleandata%>%
   group_by(county)%>%
-  ggplot(aes(x=as.factor(year), unemployment_rate_avg*100))+
-  geom_boxplot()+
+  ggplot(aes(x=as.factor(year), unemployment_rate_avg*100, fill=compare_group))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Overall Unemployment Rate per Year",
        x="Year",
        y="Unemployment Rate (%)")
@@ -464,13 +478,14 @@ cleandata%>%
   mutate("year"=as.factor(year))%>%
   mutate(overall_food_insecurity_rate=per_to_num(overall_food_insecurity_rate))%>%
   ggplot(aes(x=unemployment_rate_avg*100, y=overall_food_insecurity_rate))+
-  geom_point()+
-  geom_smooth(method="lm")+
+  geom_point(color="#4E5745")+
+  geom_smooth(method="lm", color="#AC5B4C", show.legend = F)+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Relationship Between FI and Unemployment Rate",
        subtitle="lm(food_insecurity_rate ~ unemployment_rate)",
        x="Unemployment Rate (%)",
-       y="Overall Food Insecurity Rate (%)")+
-  theme_minimal()
+       y="Overall Food Insecurity Rate (%)")
 ```
 
 **Cleaning Income Data**
@@ -493,8 +508,11 @@ cleandataincome <- merge(cleandata2020, incomedataclean)
 ```{r}
 cleandataincome%>%
   group_by(county)%>%
-  ggplot(aes(x=as.factor(year), median_income))+
-  geom_boxplot()+
+  ggplot(aes(x=as.factor(year), median_income, fill = compare_group))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Median Income per Year",
        x="Year",
        y="Median Income ($)")
@@ -506,47 +524,90 @@ cleandataincome%>%
   mutate("year"=as.factor(year))%>%
   mutate(overall_food_insecurity_rate=per_to_num(overall_food_insecurity_rate))%>%
   ggplot(aes(x=median_income, y=overall_food_insecurity_rate))+
-  geom_point()+
-  geom_smooth(method="lm")+
+  geom_point(color="#4E5745")+
+  geom_smooth(method="lm", color="#AC5B4C", show.legend = F)+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Relationship Between FI and Median Income",
        subtitle="lm(food_insecurity_rate ~ median_income)",
        x="Median Income ($)",
-       y="Overall Food Insecurity Rate (%)")+
-  theme_minimal()
+       y="Overall Food Insecurity Rate (%)")
 ```
 
-**[Overall] Linear Model Food Insecurity ~ Unemployment Rate + Median Income**
+**Add Disability Data**
+```{r}
+disabilitydata <- disabilitydata%>%
+  mutate(county=gsub(" County", "", .$county))%>%
+  mutate(county=paste(.$county, "County"))
+
+cleandatadisability <- inner_join(disabilitydata, cleandataincome, by = c("county", "year"))
+```
+
+**Overall Percent Disability per Year**
+```{r}
+cleandatadisability%>%
+  group_by(county)%>%
+  ggplot(aes(x=as.factor(year), percent_with_a_disability, fill=compare_group))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
+  labs(title="Overall Disability Rate per Year",
+       x="Year",
+       y="Disability Rate (%)")
+```
+
+**Linear Model Food Insecurity ~ Unemployment Rate**
+```{r}
+cleandatadisability%>%
+  mutate("year"=as.factor(year))%>%
+  mutate(overall_food_insecurity_rate=per_to_num(overall_food_insecurity_rate))%>%
+  ggplot(aes(x=percent_with_a_disability, y=overall_food_insecurity_rate))+
+  geom_point(color="#4E5745")+
+  geom_smooth(method="lm", color="#AC5B4C", show.legend = F)+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
+  labs(title="Relationship Between FI and Disability Rate",
+       subtitle="lm(food_insecurity_rate ~ disability_rate)",
+       x="Disability Rate (%)",
+       y="Overall Food Insecurity Rate (%)")
+```
+
+## Models 
+
+### Test against 2020
+**[Overall] Linear Model: Food Insecurity ~ Unemployment Rate + Median Income**
 ```{r warning=FALSE, message=FALSE}
 # Define Training Data (2010-2019) and Test Data (2020)
-cleandatatrain <- cleandataincome%>%
+cleandatatrain <- cleandatadisability%>%
   filter(year<2020)%>%
-  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
 
-cleandatatest <- cleandataincome%>%
+cleandatatest <- cleandatadisability%>%
   filter(year==2020)%>%
-  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
 
-model <- lm(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income, data=cleandatatrain)
+model <- lm(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, data=cleandatatrain)
 
 lm_results <- data.frame("county"=cleandatatest$county,
-           "predicted_food_insecurity_rate"=as.numeric(model$coefficients[1]) + as.numeric(model$coefficients[2])*cleandatatest$unemployment_rate_avg + as.numeric(model$coefficients[3])*cleandatatest$median_income,
+           "predicted_food_insecurity_rate"=as.numeric(model$coefficients[1]) + as.numeric(model$coefficients[2])*cleandatatest$unemployment_rate_avg + as.numeric(model$coefficients[3])*cleandatatest$median_income + as.numeric(model$coefficients[4])*cleandatatest$percent_with_a_disability,
            "actual_food_insecurity_rate"=cleandatatest$overall_food_insecurity_rate)
 
-lm_overall_acc <- 1 - mean((lm_results$predicted_food_insecurity_rate-lm_results$actual_food_insecurity_rate)/lm_results$actual_food_insecurity_rate)
+lm_overall_acc20 <- 1 - mean((lm_results$predicted_food_insecurity_rate-lm_results$actual_food_insecurity_rate)/lm_results$actual_food_insecurity_rate)
 ```
 
 **[Overall] Random Forest: Food Insecurity ~ Unemployment Rate + Median Income**
 ```{r warning=FALSE, message=FALSE}
 # Define Training Data (2010-2019) and Test Data (2020)
-cleandatatrain <- cleandataincome%>%
+cleandatatrain <- cleandatadisability%>%
   filter(year<2020)%>%
-  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
 
-cleandatatest <- cleandataincome%>%
+cleandatatest <- cleandatadisability%>%
   filter(year==2020)%>%
-  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
 
-train_rf <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income, method="rf", data=cleandatatrain, 
+train_rf <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rf", data=cleandatatrain, 
                   tuneGrid=data.frame(mtry=1:2),
                   trControl=trainControl(method="cv", number=5))
 
@@ -556,40 +617,53 @@ rf_results <- data.frame("county"=cleandatatest$county,
                           "predicted_food_insecurity_rate"= pred,
                           "actual_food_insecurity_rate"= cleandatatest$overall_food_insecurity_rate)
 
-rf_overall_acc <- 1 - mean((rf_results$predicted_food_insecurity_rate-rf_results$actual_food_insecurity_rate)/rf_results$actual_food_insecurity_rate)
+rf_overall_acc20 <- 1 - mean((rf_results$predicted_food_insecurity_rate-rf_results$actual_food_insecurity_rate)/rf_results$actual_food_insecurity_rate)
 ```
 
 **[Overall] Classification Tree: Food Insecurity ~ Unemployment Rate + Median Income**
 ```{r warning=FALSE, message=FALSE}
-train_ct <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income, method="rpart", data=cleandatatrain, 
+train_ct <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rpart", data=cleandatatrain, 
                   tuneGrid=data.frame(cp=seq(0.0, 0.5, len=100)),
                   trControl=trainControl(method="cv", number=5))
 
-pred <- as.numeric(predict(train_rf, newdata=cleandatatest))
+pred <- as.numeric(predict(train_ct, newdata=cleandatatest))
 
 ct_results <- data.frame("county"=cleandatatest$county,
                           "predicted_food_insecurity_rate"= pred,
                           "actual_food_insecurity_rate"= cleandatatest$overall_food_insecurity_rate)
 
-ct_overall_acc <- 1 - mean((ct_results$predicted_food_insecurity_rate-ct_results$actual_food_insecurity_rate)/ct_results$actual_food_insecurity_rate)
+ct_overall_acc20 <- 1 - mean((ct_results$predicted_food_insecurity_rate-ct_results$actual_food_insecurity_rate)/ct_results$actual_food_insecurity_rate)
 ```
 
 **Linear Model Function (lm_trainr)**
 ```{r}
-lm_trainr <- function(c){
+lm_trainr20 <- function(c){
+  
   # Define Training Data (2010-2019) and Test Data (2020)
-  cleandatatrain <- cleandataincome%>%
+  cleandatatrain <- cleandatadisability%>%
     filter(year<2020, county==c)%>%
-    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
   
-  cleandatatest <- cleandataincome%>%
+  cleandatatest <- cleandatadisability%>%
     filter(year==2020, county==c)%>%
-    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
   
-  model <- lm(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income, data=cleandatatrain)
+  # Check to see if Training and Test Data exists
+  if (nrow(cleandatatrain)==0 | nrow(cleandatatest) == 0){
+    
+      lm_results <- data.frame("county"=c,
+             "predicted_food_insecurity_rate"=NA,
+             "actual_food_insecurity_rate"=NA)
+
+  lm_acc <- NA
+  
+  return(list(results=lm_results, accuracy=lm_acc))
+  }
+  
+  model <- lm(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, data=cleandatatrain)
   
   lm_results <- data.frame("county"=cleandatatest$county,
-             "predicted_food_insecurity_rate"=as.numeric(model$coefficients[1]) + as.numeric(model$coefficients[2])*cleandatatest$unemployment_rate_avg + as.numeric(model$coefficients[3])*cleandatatest$median_income,
+             "predicted_food_insecurity_rate"=as.numeric(model$coefficients[1]) + as.numeric(model$coefficients[2])*cleandatatest$unemployment_rate_avg + as.numeric(model$coefficients[3])*cleandatatest$median_income + as.numeric(model$coefficients[4])*cleandatatest$percent_with_a_disability,
              "actual_food_insecurity_rate"=cleandatatest$overall_food_insecurity_rate)
 
   lm_acc <- 1 - mean(abs(lm_results$predicted_food_insecurity_rate-lm_results$actual_food_insecurity_rate)/lm_results$actual_food_insecurity_rate)
@@ -599,8 +673,6 @@ lm_trainr <- function(c){
   
   return(list(results=lm_results, accuracy=lm_acc))
 }
-
-
 ```
 
 **[By County] Linear Model**
@@ -608,30 +680,42 @@ lm_trainr <- function(c){
 results <- data.frame(county=c(), predicted_food_insecurity_rate=c(), actual_food_insecurity=c())
 accuracy <- c()
 
-for (c in unique(cleandataincome$county)){
-  trainr_data <- lm_trainr(c)
+for (c in unique(cleandatadisability$county)){
+  trainr_data <- lm_trainr20(c)
   results <- rbind(results, trainr_data[[1]])
   accuracy <- c(accuracy, trainr_data[[2]])
   rm(trainr_data)
 }
 
 results$accuracy <- accuracy
-lm_county_acc <- mean(results$accuracy)
+lm_county_acc20 <- mean(results$accuracy, na.rm=T)
 ```
 
 **Random Forest Function (rf_trainr)**
 ```{r}
-rf_trainr <- function(c){
+rf_trainr20 <- function(c){
   # Define Training Data (2010-2019) and Test Data (2020)
-  cleandatatrain <- cleandataincome%>%
+  cleandatatrain <- cleandatadisability%>%
     filter(year<2020, county==c)%>%
-    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
 
-  cleandatatest <- cleandataincome%>%
+  cleandatatest <- cleandatadisability%>%
     filter(year==2020, county==c)%>%
-    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
   
-  train_rf <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income, method="rf", data=cleandatatrain, 
+  # Check to see if Training and Test Data exists
+  if (nrow(cleandatatrain) <= 1 | nrow(cleandatatest) == 0){
+    
+      rf_results <- data.frame("county"=c,
+             "predicted_food_insecurity_rate"=NA,
+             "actual_food_insecurity_rate"=NA)
+
+  rf_acc <- NA
+  
+  return(list(results=rf_results, accuracy=rf_acc))
+  }
+  
+  train_rf <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rf", data=cleandatatrain, 
                   tuneGrid=data.frame(mtry=1:2),
                   trControl=trainControl(method="cv", number=5))
   
@@ -656,29 +740,41 @@ rf_trainr <- function(c){
 results <- data.frame(county=c(), predicted_food_insecurity_rate=c(), actual_food_insecurity=c())
 accuracy <- c()
 
-for (c in unique(cleandataincome$county)){
-  trainr_data <- rf_trainr(c)
+for (c in unique(cleandatadisability$county)){
+  trainr_data <- rf_trainr20(c)
   results <- rbind(results, trainr_data[[1]])
   accuracy <- c(accuracy, trainr_data[[2]])
 }
 
 results$accuracy <- accuracy
-rf_county_acc <- mean(results$accuracy)
+rf_county_acc20 <- mean(results$accuracy, na.rm=T)
 ```
 
 **Classification Tree (ct_trainr)**
 ```{r}
-ct_trainr <- function(c){
+ct_trainr20 <- function(c){
   # Define Training Data (2010-2019) and Test Data (2020)
-  cleandatatrain <- cleandataincome%>%
+  cleandatatrain <- cleandatadisability%>%
     filter(year<2020, county==c)%>%
-    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
 
-  cleandatatest <- cleandataincome%>%
+  cleandatatest <- cleandatadisability%>%
     filter(year==2020, county==c)%>%
-    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income)
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
   
-  train_ct <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income, method="rpart", data=cleandatatrain, 
+  # Check to see if Training and Test Data exists
+  if (nrow(cleandatatrain) <= 1 | nrow(cleandatatest) == 0){
+    
+      ct_results <- data.frame("county"=c,
+             "predicted_food_insecurity_rate"=NA,
+             "actual_food_insecurity_rate"=NA)
+
+  ct_acc <- NA
+  
+  return(list(results=ct_results, accuracy=ct_acc))
+  }
+  
+  train_ct <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rpart", data=cleandatatrain, 
                   tuneGrid=data.frame(cp=seq(0.0, 0.5, len=100)),
                   trControl=trainControl(method="cv", number=5))
   
@@ -703,21 +799,256 @@ ct_trainr <- function(c){
 results <- data.frame(county=c(), predicted_food_insecurity_rate=c(), actual_food_insecurity=c())
 accuracy <- c()
 
-for (c in unique(cleandataincome$county)){
-  trainr_data <- ct_trainr(c)
+for (c in unique(cleandatadisability$county)){
+  trainr_data <- ct_trainr20(c)
   results <- rbind(results, trainr_data[[1]])
   accuracy <- c(accuracy, trainr_data[[2]])
 }
 
 results$accuracy <- accuracy
-ct_county_acc <- mean(results$accuracy)
+ct_county_acc20 <- mean(results$accuracy, na.rm=T)
 ```
 
+### Test against 2019
+**[Overall] Linear Model: Food Insecurity ~ Unemployment Rate + Median Income**
+```{r warning=FALSE, message=FALSE}
+# Define Training Data (2010-2019) and Test Data (2020)
+cleandatatrain <- cleandatadisability%>%
+  filter(year<2019)%>%
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+
+cleandatatest <- cleandatadisability%>%
+  filter(year==2019)%>%
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+
+model <- lm(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, data=cleandatatrain)
+
+lm_results <- data.frame("county"=cleandatatest$county,
+           "predicted_food_insecurity_rate"=as.numeric(model$coefficients[1]) + as.numeric(model$coefficients[2])*cleandatatest$unemployment_rate_avg + as.numeric(model$coefficients[3])*cleandatatest$median_income + as.numeric(model$coefficients[4])*cleandatatest$percent_with_a_disability,
+           "actual_food_insecurity_rate"=cleandatatest$overall_food_insecurity_rate)
+
+lm_overall_acc19 <- 1 - mean((lm_results$predicted_food_insecurity_rate-lm_results$actual_food_insecurity_rate)/lm_results$actual_food_insecurity_rate)
+```
+
+**[Overall] Random Forest: Food Insecurity ~ Unemployment Rate + Median Income**
+```{r warning=FALSE, message=FALSE}
+# Define Training Data (2010-2019) and Test Data (2020)
+cleandatatrain <- cleandatadisability%>%
+  filter(year<2019)%>%
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+
+cleandatatest <- cleandatadisability%>%
+  filter(year==2019)%>%
+  select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+
+train_rf <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rf", data=cleandatatrain, 
+                  tuneGrid=data.frame(mtry=1:2),
+                  trControl=trainControl(method="cv", number=5))
+
+pred <- as.numeric(predict(train_rf, newdata=cleandatatest))
+
+rf_results <- data.frame("county"=cleandatatest$county,
+                          "predicted_food_insecurity_rate"= pred,
+                          "actual_food_insecurity_rate"= cleandatatest$overall_food_insecurity_rate)
+
+rf_overall_acc19 <- 1 - mean((rf_results$predicted_food_insecurity_rate-rf_results$actual_food_insecurity_rate)/rf_results$actual_food_insecurity_rate)
+```
+
+**[Overall] Classification Tree: Food Insecurity ~ Unemployment Rate + Median Income**
+```{r warning=FALSE, message=FALSE}
+train_ct <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rpart", data=cleandatatrain, 
+                  tuneGrid=data.frame(cp=seq(0.0, 0.5, len=100)),
+                  trControl=trainControl(method="cv", number=5))
+
+pred <- as.numeric(predict(train_ct, newdata=cleandatatest))
+
+ct_results <- data.frame("county"=cleandatatest$county,
+                          "predicted_food_insecurity_rate"= pred,
+                          "actual_food_insecurity_rate"= cleandatatest$overall_food_insecurity_rate)
+
+ct_overall_acc19 <- 1 - mean((ct_results$predicted_food_insecurity_rate-ct_results$actual_food_insecurity_rate)/ct_results$actual_food_insecurity_rate)
+```
+
+**Linear Model Function (lm_trainr)**
+```{r}
+lm_trainr19 <- function(c){
+  
+  # Define Training Data (2010-2019) and Test Data (2020)
+  cleandatatrain <- cleandatadisability%>%
+    filter(year<2019, county==c)%>%
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+  
+  cleandatatest <- cleandatadisability%>%
+    filter(year==2019, county==c)%>%
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+  
+  # Check to see if Training and Test Data exists
+  if (nrow(cleandatatrain)==0 | nrow(cleandatatest) == 0){
+    
+      lm_results <- data.frame("county"=c,
+             "predicted_food_insecurity_rate"=NA,
+             "actual_food_insecurity_rate"=NA)
+
+  lm_acc <- NA
+  
+  return(list(results=lm_results, accuracy=lm_acc))
+  }
+  
+  model <- lm(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, data=cleandatatrain)
+  
+  lm_results <- data.frame("county"=cleandatatest$county,
+             "predicted_food_insecurity_rate"=as.numeric(model$coefficients[1]) + as.numeric(model$coefficients[2])*cleandatatest$unemployment_rate_avg + as.numeric(model$coefficients[3])*cleandatatest$median_income + as.numeric(model$coefficients[4])*cleandatatest$percent_with_a_disability,
+             "actual_food_insecurity_rate"=cleandatatest$overall_food_insecurity_rate)
+
+  lm_acc <- 1 - mean(abs(lm_results$predicted_food_insecurity_rate-lm_results$actual_food_insecurity_rate)/lm_results$actual_food_insecurity_rate)
+  
+  rm(cleandatatrain)
+  rm(cleandatatest)
+  
+  return(list(results=lm_results, accuracy=lm_acc))
+}
+```
+
+**[By County] Linear Model**
+```{r warning=FALSE, message=FALSE}
+results <- data.frame(county=c(), predicted_food_insecurity_rate=c(), actual_food_insecurity=c())
+accuracy <- c()
+
+for (c in unique(cleandatadisability$county)){
+  trainr_data <- lm_trainr19(c)
+  results <- rbind(results, trainr_data[[1]])
+  accuracy <- c(accuracy, trainr_data[[2]])
+  rm(trainr_data)
+}
+
+results$accuracy <- accuracy
+lm_county_acc19 <- mean(results$accuracy, na.rm=T)
+```
+
+**Random Forest Function (rf_trainr)**
+```{r}
+rf_trainr19 <- function(c){
+  # Define Training Data (2010-2019) and Test Data (2020)
+  cleandatatrain <- cleandatadisability%>%
+    filter(year<2019, county==c)%>%
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+
+  cleandatatest <- cleandatadisability%>%
+    filter(year==2019, county==c)%>%
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+  
+  # Check to see if Training and Test Data exists
+  if (nrow(cleandatatrain) <= 1 | nrow(cleandatatest) == 0){
+    
+      rf_results <- data.frame("county"=c,
+             "predicted_food_insecurity_rate"=NA,
+             "actual_food_insecurity_rate"=NA)
+
+  rf_acc <- NA
+  
+  return(list(results=rf_results, accuracy=rf_acc))
+  }
+  
+  train_rf <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rf", data=cleandatatrain, 
+                  tuneGrid=data.frame(mtry=1:2),
+                  trControl=trainControl(method="cv", number=5))
+  
+  pred <- as.numeric(predict(train_rf, newdata=cleandatatest))
+
+  rf_results <- data.frame("county"=cleandatatest$county,
+                            "predicted_food_insecurity_rate"= pred,
+                            "actual_food_insecurity_rate"= cleandatatest$overall_food_insecurity_rate)
+  rf_acc <- 1 - mean((rf_results$predicted_food_insecurity_rate-rf_results$actual_food_insecurity_rate)/rf_results$actual_food_insecurity_rate)
+  
+  rm(cleandatatrain)
+  rm(cleandatatest)
+  rm(train_rf)
+  rm(pred)
+
+  return(list(results=rf_results, accuracy=rf_acc))
+}
+```
+
+**[By County] Random Forest**
+```{r warning=FALSE, message=FALSE}
+results <- data.frame(county=c(), predicted_food_insecurity_rate=c(), actual_food_insecurity=c())
+accuracy <- c()
+
+for (c in unique(cleandatadisability$county)){
+  trainr_data <- rf_trainr19(c)
+  results <- rbind(results, trainr_data[[1]])
+  accuracy <- c(accuracy, trainr_data[[2]])
+}
+
+results$accuracy <- accuracy
+rf_county_acc19 <- mean(results$accuracy, na.rm=T)
+```
+
+**Classification Tree (ct_trainr)**
+```{r}
+ct_trainr19 <- function(c){
+  # Define Training Data (2010-2019) and Test Data (2020)
+  cleandatatrain <- cleandatadisability%>%
+    filter(year<2019, county==c)%>%
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+
+  cleandatatest <- cleandatadisability%>%
+    filter(year==2019, county==c)%>%
+    select(county, overall_food_insecurity_rate, unemployment_rate_avg, median_income, percent_with_a_disability)
+  
+  # Check to see if Training and Test Data exists
+  if (nrow(cleandatatrain) <= 1 | nrow(cleandatatest) == 0){
+    
+      ct_results <- data.frame("county"=c,
+             "predicted_food_insecurity_rate"=NA,
+             "actual_food_insecurity_rate"=NA)
+
+  ct_acc <- NA
+  
+  return(list(results=ct_results, accuracy=ct_acc))
+  }
+  
+  train_ct <- train(overall_food_insecurity_rate ~ unemployment_rate_avg + median_income + percent_with_a_disability, method="rpart", data=cleandatatrain, 
+                  tuneGrid=data.frame(cp=seq(0.0, 0.5, len=100)),
+                  trControl=trainControl(method="cv", number=5))
+  
+  pred <- as.numeric(predict(train_ct, newdata=cleandatatest))
+
+  ct_results <- data.frame("county"=cleandatatest$county,
+                            "predicted_food_insecurity_rate"= pred,
+                            "actual_food_insecurity_rate"= cleandatatest$overall_food_insecurity_rate)
+  ct_acc <- 1 - mean((ct_results$predicted_food_insecurity_rate-ct_results$actual_food_insecurity_rate)/ct_results$actual_food_insecurity_rate)
+  
+  rm(cleandatatrain)
+  rm(cleandatatest)
+  rm(train_ct)
+  rm(pred)
+
+  return(list(results=ct_results, accuracy=ct_acc))
+}
+```
+
+**[By County] Classification Tree**
+```{r warning=FALSE, message=FALSE}
+results <- data.frame(county=c(), predicted_food_insecurity_rate=c(), actual_food_insecurity=c())
+accuracy <- c()
+
+for (c in unique(cleandatadisability$county)){
+  trainr_data <- ct_trainr19(c)
+  results <- rbind(results, trainr_data[[1]])
+  accuracy <- c(accuracy, trainr_data[[2]])
+}
+
+results$accuracy <- accuracy
+ct_county_acc19 <- mean(results$accuracy, na.rm=T)
+```
 
 **Display Results**
 ```{r}
 kable(data.frame("Model Type"=c("Overall Linear Regression", "Overall Random Forest", "Overall Classification Tree",
                                 "By County Linear Model", "By County Random Forest", "By County Classification Tree"),
-                 "Accuracy"=c(lm_overall_acc, rf_overall_acc, ct_overall_acc, lm_county_acc, rf_county_acc, ct_county_acc)))
+                 "Test Accuracy 2019"=c(lm_overall_acc19, rf_overall_acc19, ct_overall_acc19, 
+                                        lm_county_acc19, rf_county_acc19, ct_county_acc19),
+                "Test Accuracy 2020"=c(lm_overall_acc20, rf_overall_acc20, ct_overall_acc20, 
+                                       lm_county_acc20, rf_county_acc20, ct_county_acc20)))
 ```
-
