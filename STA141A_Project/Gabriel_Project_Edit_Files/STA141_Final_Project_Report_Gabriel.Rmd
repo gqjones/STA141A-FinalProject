@@ -1,0 +1,481 @@
+---
+title: "STA 141 Food Insecurity Project Report"
+author: "Gabriel Jones & Brooke Kerstein"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+(Explain the background of your project, Summarize what you will do)
+(Initialization code will be after text)
+
+## Libraries
+```{r warning=FALSE, message=FALSE}
+library(MASS)
+library(knitr)
+library(dplyr)
+library(tidyverse)
+library(matlib)
+library(lubridate)
+library(pdftools)
+library(stringr)
+library(ggplot2)
+library(RColorBrewer)
+library(ggmap)
+library(ggsci)
+library(patchwork)
+library(ddpcr)
+library(caret)
+library(car)
+library(paletteer)
+```
+
+```{r warning=FALSE, message=FALSE, include=F}
+rawdata2010 <- readr::read_csv("MMG_Data_2010.csv", show_col_types = FALSE)
+rawdata2011 <- readr::read_csv("MMG_Data_2011.csv", show_col_types = FALSE)
+rawdata2012 <- readr::read_csv("MMG_Data_2012.csv", show_col_types = FALSE)
+rawdata2013 <- readr::read_csv("MMG_Data_2013.csv", show_col_types = FALSE)
+rawdata2014 <- readr::read_csv("MMG_Data_2014.csv", show_col_types = FALSE)
+rawdata2015 <- readr::read_csv("MMG_Data_2015.csv", show_col_types = FALSE)
+rawdata2016 <- readr::read_csv("MMG_Data_2016.csv", show_col_types = FALSE)
+rawdata2017 <- readr::read_csv("MMG_Data_2017.csv", show_col_types = FALSE)
+rawdata2018 <- readr::read_csv("MMG_Data_2018.csv", show_col_types = FALSE)
+rawdata2019 <- readr::read_csv("MMG_Data_2019.csv", show_col_types = FALSE)
+
+california_counties <- readr::read_csv("California_Counties.csv", 
+                                       show_col_types = FALSE)
+california_counties <- select(california_counties, -"the_geom")
+
+unemploymentdata <- readr::read_csv("Local_Area_Unemployment_Statistics__LAUS_.csv", 
+                                    show_col_types = FALSE)
+unemploymentdata <- janitor::clean_names(unemploymentdata)
+
+incomedata <- readr::read_csv("incomedata.csv", show_col_types = FALSE)
+incomedata <- janitor::clean_names(incomedata)
+
+disabilitydata <- readr::read_csv("totalDisability.csv")
+disabilitydata <- select(disabilitydata, -"...1")
+disabilitydata <- janitor::clean_names(disabilitydata)
+```
+
+## Data Wrangling
+
+### Food Insecurity Data
+
+Our food insecurity data was given to us as a folder containing 11 .xlsx files. Each file contained food insecurity data for every county in the US. Upon exploring the format of each file, we noticed that there were inconsistencies with the columns between data  sets, thus we would need to clean each data set individually before merging them all together. 
+
+We initiated our data wrangling process by loading each file into it's own data frame. We then cleaned up the 2019-2021 data so that it was in a desirable format, this would act as our baseline format for the other data sets to match. While the data for each year had slight differences from each other, the process of cleaning them followed the same general process. First we began by selecting only California data and removing any undesired columns. We then added a "year" column to store the year that this data was obtained for. Then we manually cleaned some of the column names to remove the "20XX" and put them into tidy format using the janitor package. Lastly, we redefined the order in which columns were organized in the data frame and merged it into a single data frame called "cleandata". Below is an example of how we defined our baseline 2019-2021 data and how we cleaned yearly data for 2010-2018:
+```{r}
+# Clean up the baseline data frame that we will be adding yearly data to
+cleandata2019 <- rawdata2019 %>%
+  select(
+    -"Food Insecurity Rate among Black Persons (all ethnicities)",
+    -"Food Insecurity Rate among Hispanic Persons (any race)",
+    -"Food Insecurity Rate among White, non-Hispanic Persons",
+    -"Weighted weekly $ needed by FI"
+  ) %>%
+  filter(State == "CA")
+cleandata2019 <- janitor::clean_names(cleandata2019)
+
+# Clean up other yearly data and put it in the same format as our baseline data frame
+cleandata2010 <- rawdata2010 %>%
+  # Select Desired Data
+  filter(State == "CA") %>%
+  select(-"...19") %>%
+  mutate("Year" = rep(2010, length(.$State))) %>%
+  # Clean Names
+  rename(., "Overall Food Insecurity Rate" = "2010 Food Insecurity Rate") %>%
+  rename(., "# of Food Insecure Persons Overall" = "Number of Food Insecure Persons in 2010") %>%
+  rename(., "Child Food Insecurity Rate" = "2010 Child food insecurity rate") %>%
+  rename(., "# of Food Insecure Children" = "Number of Food Insecure Children in 2010") %>%
+  rename(., "Cost Per Meal" = "2010 Cost Per Meal") %>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2010 Weighted Annual Food Budget Shortfall") %>%
+  rename(., `% food insecure children in HH w/ HH incomes above 185 FPL` = `% of food insecure children in HH w/ HH incomes above 185 FPL`) %>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year))) %>%
+  as.data.frame(.)
+
+# Make columns the same type
+cleandata2010$`# of Food Insecure Children` <-
+  as.character(cleandata2010$`# of Food Insecure Children`)
+cleandata2010 <- janitor::clean_names(cleandata2010) %>%
+  select(
+    fips,
+    state,
+    county_state,
+    year,
+    overall_food_insecurity_rate,
+    number_of_food_insecure_persons_overall,
+    low_threshold_in_state,
+    low_threshold_type,
+    high_threshold_in_state,
+    high_threshold_type,
+    percent_fi_low_threshold,
+    percent_fi_btwn_thresholds,
+    percent_fi_high_threshold,
+    percent_fi_low_threshold_2,
+    child_food_insecurity_rate,
+    number_of_food_insecure_children,
+    percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+    percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl,
+    cost_per_meal,
+    weighted_annual_food_budget_shortfall
+  )
+# Merge into one data frame
+cleandata <- rbind(cleandata2019, cleandata2010)
+```
+
+```{r include=F}
+# ***Wont show up in report. This is here to prepare data for visualization and analysis***
+
+# 2011
+cleandata2011 <- rawdata2011%>%
+  filter(State=="CA")%>%
+  mutate("Year"=rep(2011, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2011 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "Number of Food Insecure Persons in 2011")%>%
+  rename(., "Child Food Insecurity Rate" = "2011 Child Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Children" = "Number of Food Insecure Children in 2011")%>%
+  rename(., `% food insecure children in HH w/ HH incomes above 185 FPL` = `% of food insecure children in HH w/ HH incomes above 185 FPL`)%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2011$`# of Food Insecure Children` <- as.character(cleandata2011$`# of Food Insecure Children`)
+cleandata2011 <- janitor::clean_names(cleandata2011)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2011)
+
+# 2012
+cleandata2012 <- rawdata2012%>%
+  filter(State=="CA")%>%
+  select(-"...19")%>%
+  mutate("Year"=rep(2012, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2012 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "# of Food Insecure Persons in 2012")%>%
+  rename(., "Child Food Insecurity Rate" = "2012 Child food insecurity rate")%>%
+  rename(., "# of Food Insecure Children" = "# of Food Insecure Children in 2012")%>%
+  rename(., "Cost Per Meal"="2012 Cost Per Meal")%>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2012 Weighted Annual Food Budget Shortfall")%>%
+  rename(., "% food insecure children in HH w/ HH incomes below 185 FPL" = "% food insecure children in HH w/ HH incomes below 185 FPL in 2012")%>%
+  rename(., "% food insecure children in HH w/ HH incomes above 185 FPL" = "% food insecure children in HH w/ HH incomes above 185 FPL in 2012")%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2012$`# of Food Insecure Children` <- as.character(cleandata2012$`# of Food Insecure Children`)
+cleandata2012 <- janitor::clean_names(cleandata2012)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2012)
+
+# 2013
+cleandata2013 <- rawdata2013%>%
+  filter(State=="CA")%>%
+  select(-"...19")%>%
+  mutate("Year"=rep(2013, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2013 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "# of Food Insecure Persons in 2013")%>%
+  rename(., "Child Food Insecurity Rate" = "2013 Child food insecurity rate")%>%
+  rename(., "# of Food Insecure Children" = "# of Food Insecure Children in 2013")%>%
+  rename(., "Cost Per Meal"="2013 Cost Per Meal")%>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2013 Weighted Annual Food Budget Shortfall")%>%
+  rename(., "% food insecure children in HH w/ HH incomes below 185 FPL" = "% food insecure children in HH w/ HH incomes below 185 FPL in 2013")%>%
+  rename(., "% food insecure children in HH w/ HH incomes above 185 FPL" = "% food insecure children in HH w/ HH incomes above 185 FPL in 2013")%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2013$`# of Food Insecure Children` <- as.character(cleandata2013$`# of Food Insecure Children`)
+cleandata2013 <- janitor::clean_names(cleandata2013)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2013)
+
+# 2014
+cleandata2014 <- rawdata2014%>%
+  filter(State=="CA")%>%
+  mutate("Year"=rep(2014, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2014 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "# of Food Insecure Persons in 2014")%>%
+  rename(., "Child Food Insecurity Rate" = "2014 Child food insecurity rate")%>%
+  rename(., "# of Food Insecure Children" = "# of Food Insecure Children in 2014")%>%
+  rename(., "Cost Per Meal"="2014 Cost Per Meal")%>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2014 Weighted Annual Food Budget Shortfall")%>%
+  rename(., "% food insecure children in HH w/ HH incomes below 185 FPL" = "% food insecure children in HH w/ HH incomes below 185 FPL in 2014")%>%
+  rename(., "% food insecure children in HH w/ HH incomes above 185 FPL" = "% food insecure children in HH w/ HH incomes above 185 FPL in 2014")%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2014$`# of Food Insecure Children` <- as.character(cleandata2014$`# of Food Insecure Children`)
+cleandata2014 <- janitor::clean_names(cleandata2014)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2014)
+
+# 2015
+cleandata2015 <- rawdata2015%>%
+  filter(State=="CA")%>%
+  mutate("Year"=rep(2015, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2015 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "# of Food Insecure Persons in 2015")%>%
+  rename(., "Child Food Insecurity Rate" = "2015 Child food insecurity rate")%>%
+  rename(., "# of Food Insecure Children" = "# of Food Insecure Children in 2015")%>%
+  rename(., "Cost Per Meal"="2015 Cost Per Meal")%>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2015 Weighted Annual Food Budget Shortfall")%>%
+  rename(., "% food insecure children in HH w/ HH incomes below 185 FPL" = "% food insecure children in HH w/ HH incomes below 185 FPL in 2015")%>%
+  rename(., "% food insecure children in HH w/ HH incomes above 185 FPL" = "% food insecure children in HH w/ HH incomes above 185 FPL in 2015")%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2015$`# of Food Insecure Children` <- as.character(cleandata2015$`# of Food Insecure Children`)
+cleandata2015 <- janitor::clean_names(cleandata2015)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2015)
+
+
+# 2016
+cleandata2016 <- rawdata2016%>%
+  filter(State=="CA")%>%
+  mutate("Year"=rep(2016, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2016 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "# of Food Insecure Persons in 2016")%>%
+  rename(., "Child Food Insecurity Rate" = "2016 Child food insecurity rate")%>%
+  rename(., "# of Food Insecure Children" = "# of Food Insecure Children in 2016")%>%
+  rename(., "Cost Per Meal"="2016 Cost Per Meal")%>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2016 Weighted Annual Food Budget Shortfall")%>%
+  rename(., "% food insecure children in HH w/ HH incomes below 185 FPL" = "% food insecure children in HH w/ HH incomes below 185 FPL in 2016")%>%
+  rename(., "% food insecure children in HH w/ HH incomes above 185 FPL" = "% food insecure children in HH w/ HH incomes above 185 FPL in 2016")%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2016$`# of Food Insecure Children` <- as.character(cleandata2016$`# of Food Insecure Children`)
+cleandata2016 <- janitor::clean_names(cleandata2016)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2016)
+
+# 2017
+cleandata2017 <- rawdata2017%>%
+  filter(State=="CA")%>%
+  mutate("Year"=rep(2017, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2017 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "# of Food Insecure Persons in 2017")%>%
+  rename(., "Child Food Insecurity Rate" = "2017 Child food insecurity rate")%>%
+  rename(., "# of Food Insecure Children" = "# of Food Insecure Children in 2017")%>%
+  rename(., "Cost Per Meal"="2017 Cost Per Meal")%>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2017 Weighted Annual Food Budget Shortfall")%>%
+  rename(., "% food insecure children in HH w/ HH incomes below 185 FPL" = "% food insecure children in HH w/ HH incomes below 185 FPL in 2017")%>%
+  rename(., "% food insecure children in HH w/ HH incomes above 185 FPL" = "% food insecure children in HH w/ HH incomes above 185 FPL in 2017")%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2017$`# of Food Insecure Children` <- as.character(cleandata2017$`# of Food Insecure Children`)
+cleandata2017 <- janitor::clean_names(cleandata2017)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2017)
+
+# 2018
+cleandata2018 <- rawdata2018%>%
+  filter(State=="CA")%>%
+  mutate("Year"=rep(2018, length(.$State)))%>%
+  rename(., "Overall Food Insecurity Rate" = "2018 Food Insecurity Rate")%>%
+  rename(., "# of Food Insecure Persons Overall" = "# of Food Insecure Persons in 2018")%>%
+  rename(., "Child Food Insecurity Rate" = "2018 Child food insecurity rate")%>%
+  rename(., "# of Food Insecure Children" = "# of Food Insecure Children in 2018")%>%
+  rename(., "Cost Per Meal"="2018 Cost Per Meal")%>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2018 Weighted Annual Food Budget Shortfall")%>%
+  rename(., "% food insecure children in HH w/ HH incomes below 185 FPL" = "% food insecure children in HH w/ HH incomes below 185 FPL in 2018")%>%
+  rename(., "% food insecure children in HH w/ HH incomes above 185 FPL" = "% food insecure children in HH w/ HH incomes above 185 FPL in 2018")%>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year)))%>%
+  as.data.frame(.)
+  
+cleandata2018$`# of Food Insecure Children` <- as.character(cleandata2018$`# of Food Insecure Children`)
+cleandata2018 <- janitor::clean_names(cleandata2018)%>%
+  select(fips, state, county_state, year, overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+         low_threshold_in_state, low_threshold_type, high_threshold_in_state, high_threshold_type,
+         percent_fi_low_threshold, percent_fi_btwn_thresholds, percent_fi_high_threshold, percent_fi_low_threshold_2,
+         child_food_insecurity_rate, number_of_food_insecure_children, percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+         percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl, cost_per_meal, weighted_annual_food_budget_shortfall)
+cleandata <- rbind(cleandata, cleandata2018)
+
+cleandata <- cleandata%>%
+  mutate(county_state = gsub(", California", "", county_state))%>%
+  rename(county = county_state)
+```
+
+Because most of our data was in the form of percentages and dollar amounts, we wrote two simple functions that would convert these values from character class to a numeric class. 
+```{r}
+# Function that takes a character input and outputs a numeric with the "%" removed
+per_to_num <- function(x){
+  x <- gsub("%", "", x)
+  x <- as.double(x)
+  return(x)
+}
+
+# Function that takes a character input and outputs a numeric with the "$" removed
+dol_to_num <- function(x){
+  x <- gsub("\\$", "", x)
+  x <- as.double(x)
+  return(x)
+}
+```
+
+Lastly, we added a "compare_group" column so that we could differentiate 2010-2019 data points from 2020-2021 data points. The reasoning behind this will be elaborated on later.
+```{r}
+cleandata <- cleandata%>%
+  mutate("compare_group"=ifelse(.$year < 2020, 1, 2))
+cleandata$compare_group <- as.factor(cleandata$compare_group)
+```
+
+### Financial Data
+
+The financial data we used was sourced from from data.ca.gov and consisted of two different data sets containing information on unemployment and median income in California. Both of these data sets were relatively clean, thus the wrangling process was fairly simple. For the unemployment data, we filtered the data to select only California counties and the years 2010-2021. We then calculated the means for each county during each year because we were given multiple data points for each county-year combination. 
+  
+The median income data was cleaned in a similar fashion. Cleaning processes unique to this data set included removing unnecessary counties from the "county" column, and merging the income data with our main data frame from 2010-2020 rather than 2010-2021. This was because our income data did not contain any information from 2021.
+  
+```{r warning=FALSE, message=FALSE}
+# Create clean unemployment data
+unemploymentdataclean <- unemploymentdata%>%
+  filter(area_type=="County", status_preliminary_final=="Final")%>%
+  select(-"area_type", -"date")%>%
+  filter(year>=2010 & year<2022)%>%
+  group_by(year, area_name)%>%
+  summarise(area_name, 
+            "labor_force_avg"=mean(labor_force),
+            "employment_avg"=mean(employment),
+            "unemployment_avg"=mean(unemployment),
+            "unemployment_rate_avg"=mean(unemployment_rate))%>%
+  distinct(.)%>%
+  as.data.frame(.)%>%
+  rename("county"="area_name")
+
+# Update main data frame
+cleandata <- merge(cleandata, unemploymentdataclean)
+```
+
+```{r warning=FALSE, message=FALSE}
+# Create clean income data
+incomedataclean <- incomedata%>%
+  filter(taxable_year >= 2010 & taxable_year <= 2021)%>%
+  rename("year"="taxable_year")%>%
+  mutate("county"=paste(.$county, "County"))%>%
+  filter(!county %in% c("Resident Out-of-State19 County", "Nonresident20 County", "Nonresident County", "Resident Out-of-State County", "Resident Out of State County", "Unallocated County"))%>%
+  select(-"latitude", -"longitude", -"new_georeferenced_column")%>%
+  as.data.frame(.)
+
+cleandata2020 <- cleandata%>%
+  filter(year<=2020)
+
+# Update main data frame
+cleandataincome <- merge(cleandata2020, incomedataclean)
+```
+
+### Age Data
+
+### Disability Data
+
+# Preliminary Findings
+
+## Correlation Matricies
+(Brooke's code goes here)
+
+## Yearly Trend Graphs
+
+  The second part of our preliminary findings from data exploration consisted of visualizing how overall food insecurity rate and our determining factors changed over the years. For these visualizations, we used yearly boxplots to show the inter-quantile range of each variable during each year. Through these plots, we're able to gain some extra insights as to what we would expect from the the relationships between our determining factors and food insecurity rate. This ultimately allows us to understand how to use statistical models to forecast food insecurity rate. 
+
+### Food Insecurity Rate per Year
+
+Starting with the yearly food insecurity rate, we notice that there is a general downturn in food insecurity each year from 2010-2019. We also notice that this downturn is disrupted in 2020 where the food insecurity rate stays relatively the same as the previous year. The downward trend then is seen to be continued as expected in 2021. 
+  
+```{r echo=F, message=F, warning=F}
+cleandata%>%
+  group_by(county)%>%
+  ggplot(aes(x=as.factor(year), per_to_num(overall_food_insecurity_rate), fill=compare_group))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
+  labs(title="Overall Food Insecurity Rate per Year",
+       x="Year",
+       y="Food Insecurity Rate (%)")
+```
+
+### Median Income per Year
+
+When performing the same visualizations for median income, we observe a similar phenomenon as the food insecurity rate. Here, we notice an upward trend in median income from 2010-2019 followed by a disruption in 2020 where the IQR remains similar to the previous year. While this provides evidence that median income would be useful in forecasting food insecurity, our predictions based on this may be disrupted by the outliers shown in the graph. These outliers are likely the median income for counties with higher income job opportunities.
+
+```{r echo=F, message=F, warning=F}
+cleandataincome%>%
+  group_by(county)%>%
+  ggplot(aes(x=as.factor(year), median_income, fill = compare_group))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
+  labs(title="Median Income per Year",
+       x="Year",
+       y="Median Income ($)")
+```
+
+### Disability Rate per Year
+
+
+### Unemployment Rate per Year
+The box plot for unemployment rate in California shows a trend similar to the previous disability rate graph. Here we observe a large downturn in the unemployment rate from 2010-2019, however, we see a large increase in unemployment rate in 2020. This is likely caused by the lock down issued in 2020 where many people were no longer able to attend their jobs. This inconsistency may make predicting food insecurity in 2020 less accurate. 
+
+```{r echo=F, message=F, warning=F}
+cleandata%>%
+  group_by(county)%>%
+  ggplot(aes(x=as.factor(year), unemployment_rate_avg*100, fill=compare_group))+
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values = c("#4E5745", "#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
+  labs(title="Overall Unemployment Rate per Year",
+       x="Year",
+       y="Unemployment Rate (%)")
+```
+
+# Predictive Models
+
+## Single Factor Linear Models
+
+## Additive Linear Model
+
+## Random Forest
+
+## Classification Tree
+
+## Accuracy
+
+# Conclusion
+
+# References
+
+# R Appendix
