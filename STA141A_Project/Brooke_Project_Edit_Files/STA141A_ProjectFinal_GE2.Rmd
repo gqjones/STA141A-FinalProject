@@ -4,6 +4,9 @@ author: "Brooke Kerstein, Gabriel Jones"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
+```{r include=F}
+knitr::opts_chunk$set(eval = TRUE)
+```
 
 # Introduction
 
@@ -25,7 +28,7 @@ list.of.packages <- c("dplyr", "tidyr", "ggplot2", "hrbrthemes", "gganimate",
 
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
-lapply(list.of.packages, require, character.only=TRUE)
+lapply(list.of.packages, library, character.only=TRUE)
 ```
 
 ```{r warning=F,message=F,echo=F}
@@ -66,6 +69,57 @@ DisData2010 <- readr::read_csv("DisabilityData/DisabilityData2010.csv")
 Our food insecurity data was given to us as a folder containing 11 .xlsx files. Each file contained food insecurity data for every county in the US. Upon exploring the format of each file, we noticed that there were inconsistencies with the columns between data  sets, thus we would need to clean each data set individually before merging them all together. As a quick note, our initial data wrangling process was done to include all columns from the data set as we did not know which variables we wanted to use. The code provided in the appendix is cleaned to only include columns used for the rest of the analysis. 
 
 We initiated our data wrangling process by loading each file into it's own data frame. We then cleaned up the 2019-2021 data so that it was in a desirable format, this would act as our baseline format for the other data sets to match. While the data for each year had slight differences from each other, the process of cleaning them followed the same general process. First we began by selecting only California data and removing any undesired columns. We then added a "year" column to store the year that this data was obtained for. Then we manually cleaned some of the column names to remove the "20XX" and put them into tidy format using the janitor package. Lastly, we redefined the order in which columns were organized in the data frame and merged it into a single data frame called "cleandata". Below is an example of how we defined our baseline 2019-2021 data and how we cleaned yearly data for 2010-2018:
+
+```{r warning=F, message=F, eval=F}
+# Clean up the baseline data frame that we will be adding yearly data to
+cleandata2019 <- rawdata2019_2021 %>%
+  select(
+    -"Food Insecurity Rate among Black Persons (all ethnicities)",
+    -"Food Insecurity Rate among Hispanic Persons (any race)",
+    -"Food Insecurity Rate among White, non-Hispanic Persons",
+    -"Weighted weekly $ needed by FI"
+  ) %>%
+  filter(State == "CA")
+cleandata2019 <- janitor::clean_names(cleandata2019)
+
+# Clean up other yearly data and put it in the same format as our baseline data frame
+cleandata2010 <- rawdata2010 %>%
+  # Select Desired Data
+  filter(State == "CA") %>%
+  select(-"...19") %>%
+  mutate("Year" = rep(2010, length(.$State))) %>%
+  # Clean Names
+  rename(., "Overall Food Insecurity Rate" = "2010 Food Insecurity Rate") %>%
+  rename(., "# of Food Insecure Persons Overall" = "Number of Food Insecure Persons in 2010") %>%
+  rename(., "Child Food Insecurity Rate" = "2010 Child food insecurity rate") %>%
+  rename(., "# of Food Insecure Children" = "Number of Food Insecure Children in 2010") %>%
+  rename(., "Cost Per Meal" = "2010 Cost Per Meal") %>%
+  rename(., "Weighted Annual Food Budget Shortfall" = "2010 Weighted Annual Food Budget Shortfall") %>%
+  rename(., `% food insecure children in HH w/ HH incomes above 185 FPL` = `% of food insecure children in HH w/ HH incomes above 185 FPL`) %>%
+  mutate("% FI > Low Threshold" = rep("NA", length(.$Year))) %>%
+  as.data.frame(.)
+
+# Make columns the same type
+cleandata2010$`# of Food Insecure Children` <-
+  as.character(cleandata2010$`# of Food Insecure Children`)
+cleandata2010 <- janitor::clean_names(cleandata2010) %>%
+  select(
+    fips,
+    state,
+    county_state,
+    year,
+    overall_food_insecurity_rate, number_of_food_insecure_persons_overall,
+    low_threshold_in_state, low_threshold_type, high_threshold_in_state, 
+    high_threshold_type, percent_fi_low_threshold, percent_fi_btwn_thresholds,
+    percent_fi_high_threshold, percent_fi_low_threshold_2,
+    child_food_insecurity_rate, number_of_food_insecure_children,
+    percent_food_insecure_children_in_hh_w_hh_incomes_below_185_fpl,
+    percent_food_insecure_children_in_hh_w_hh_incomes_above_185_fpl,
+    cost_per_meal, weighted_annual_food_budget_shortfall
+  )
+# Merge into one data frame
+cleandata <- rbind(cleandata2019, cleandata2010)
+```
 
 ```{r warning=F,message=F,echo=F}
 FeedData2019_2021 <- rawdata2019_2021%>%
@@ -626,5 +680,5 @@ kable(data.frame("Model Type"=c("Overall Linear Regression", "Overall Random For
 
 ## R Appendix 
 
-```{r, ref.label=knitr::all_labels(), eval = F, echo = T}
+```{r, ref.label=knitr::all_labels(eval=T), eval = F, echo = T}
 ```
