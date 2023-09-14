@@ -7,10 +7,14 @@ output: pdf_document
 
 # Introduction
 
+Food insecurity, a pervasive threat to a wide variety of demographics in America, is defined by a lack of accessibility to consistently supplied, adequately nourishing food necessary to live an active, healthy lifestyle. Though much effort has been made to address this basic need issue, Food insecurity has remained a persistent threat across the decades. Feeding America, a non-profit organization dedicated to addressing this issue, reports that at least 34 million adults and 9 million children experience food insecurity every year, and these numbers have only exponentiation as COVID-19 grew to a peak in 2020 and early 2021.  
+
+In this report, we wish to address the characteristics of food insecurity and its many factors, plotting data retrieved from dedicated census cites such as The United States Census Bureau, CA.gov, and Feeding America's own data caches to investigate the trends of food insecurity over time as well as factors of interest that might prove vital to understanding what exactly contributes to food insecurity. With this knowledge, we plan to construct optimal predictive models using regression techniques and machine learning to ultimately test our own findings regarding the predictors of food insecurity. 
+
 # Data Wrangling
 
 ### Libraries
-```{r warning=F, message=F, results='hide'}
+```{r warning=F,message=F,echo=F, results='hide'}
 # Check for installed packages before loading
 list.of.packages <- c("dplyr", "tidyr", "ggplot2", "hrbrthemes", "gganimate", 
                       "png", "gifski", "ggridges", "tidyverse", "tibble", 
@@ -24,9 +28,7 @@ if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only=TRUE)
 ```
 
-### Import All Data Sets
-```{r warning=FALSE, message=FALSE}
-# Food Insecurity Data
+```{r warning=F,message=F,echo=F}
 rawdata2010 <- readr::read_csv("FeedAmerica/FeedAmerica2010.csv")
 rawdata2011 <- readr::read_csv("FeedAmerica/FeedAmerica2011.csv")
 rawdata2012 <- readr::read_csv("FeedAmerica/FeedAmerica2012.csv")
@@ -38,18 +40,14 @@ rawdata2017 <- readr::read_csv("FeedAmerica/FeedAmerica2017.csv")
 rawdata2018 <- readr::read_csv("FeedAmerica/FeedAmerica2018.csv")
 rawdata2019_2021 <- readr::read_csv("FeedAmerica/FeedAmerica2019_2021.csv")
 
-# Age Data
 AgeData2019 <- readr::read_csv("DisabilityData/DisabilityData2019.csv")
 
-# Unemployment Data
 unemploymentdataraw <- readr::read_csv("Local_Area_Unemployment_Statistics__LAUS_.csv")
 unemploymentdataraw <- janitor::clean_names(unemploymentdataraw)
 
-# Income Data
 incomedataraw <- readr::read_csv("incomedata.csv")
 incomedataraw <- janitor::clean_names(incomedataraw)
 
-# Disability Data
 DisData2021 <- readr::read_csv("DisabilityData/DisabilityData2021.csv")
 DisData2020 <- readr::read_csv("DisabilityData/DisabilityData2020.csv")
 DisData2019 <- readr::read_csv("DisabilityData/DisabilityData2019.csv")
@@ -65,7 +63,11 @@ DisData2010 <- readr::read_csv("DisabilityData/DisabilityData2010.csv")
 ```
 
 ### Clean Up Feed America 2019-2020
-```{r}
+Our food insecurity data was given to us as a folder containing 11 .xlsx files. Each file contained food insecurity data for every county in the US. Upon exploring the format of each file, we noticed that there were inconsistencies with the columns between data  sets, thus we would need to clean each data set individually before merging them all together. As a quick note, our initial data wrangling process was done to include all columns from the data set as we did not know which variables we wanted to use. The code provided in the appendix is cleaned to only include columns used for the rest of the analysis. 
+
+We initiated our data wrangling process by loading each file into it's own data frame. We then cleaned up the 2019-2021 data so that it was in a desirable format, this would act as our baseline format for the other data sets to match. While the data for each year had slight differences from each other, the process of cleaning them followed the same general process. First we began by selecting only California data and removing any undesired columns. We then added a "year" column to store the year that this data was obtained for. Then we manually cleaned some of the column names to remove the "20XX" and put them into tidy format using the janitor package. Lastly, we redefined the order in which columns were organized in the data frame and merged it into a single data frame called "cleandata". Below is an example of how we defined our baseline 2019-2021 data and how we cleaned yearly data for 2010-2018:
+
+```{r warning=F,message=F,echo=F}
 FeedData2019_2021 <- rawdata2019_2021%>%
   filter(State=="CA")
 
@@ -78,8 +80,7 @@ FeedData2019_2021[,3] <- sapply(FeedData2019_2021[,3],function(x) as.numeric(gsu
 FeedData2019_2021 <- FeedData2019_2021[c("year","county_state","overall_food_insecurity_rate")]
 ```
 
-### Clean Up Feed America 2010-2018
-```{r}
+```{r warning=F,message=F,echo=F}
 cleanFeed <- function(data){
   
   dataCA <- data%>%
@@ -105,8 +106,7 @@ FeedData2011 <- cbind("year"=rep(2011,nrow(cleanFeed(rawdata2011))),cleanFeed(ra
 FeedData2010 <- cbind("year"=rep(2010,nrow(cleanFeed(rawdata2010))),cleanFeed(rawdata2010))
 ```
 
-### Food Insecurity 2010-2021
-```{r}
+```{r warning=F,message=F,echo=F}
 FeedData <- rbind(FeedData2010,FeedData2011,FeedData2012,FeedData2013,FeedData2014,FeedData2015,FeedData2016,FeedData2017,FeedData2018,FeedData2019_2021)
 
 countyNameDisable <- FeedData$county_state
@@ -120,7 +120,7 @@ countyName <- FeedData$county
 ```
 
 ### Cleaning Age Data for 2019 Correlation 
-```{r warning=F,message=F}
+```{r warning=F,message=F,echo=F}
 AgeData2019CA <- AgeData2019 %>%
   filter(NAME %in% c(countyNameDisable, 'Geographic Area Name')) %>%
   row_to_names(row_number = 1)
@@ -156,7 +156,7 @@ colnames(TailAge2019) <- c("county","total_population","population_under_18","po
 ```
 
 ### Clean Up Disability 2013-2021
-```{r warning=F,message=F}
+```{r warning=F,message=F,echo=F}
 cleanDis1 <- function(data){
   
   dataCA <- data %>%
@@ -193,7 +193,7 @@ Dis2013 <- cbind("year"=rep(2013,nrow(cleanDis1(DisData2013)[,c(1,2)])),cleanDis
 ```
 
 ### Clean Up Disability 2010-2012
-```{r warning=F,message=F}
+```{r warning=F,message=F,echo=F}
 cleanDis2 <- function(data){
   
   dataCA <- data %>%
@@ -223,14 +223,19 @@ Dis2010 <- cbind("year"=rep(2010,nrow(cleanDis2(DisData2010))),cleanDis2(DisData
 ```
 
 ### Total Disability 2010-2021
-```{r}
+```{r warning=F,message=F,echo=F}
 totalDisability <- rbind(Dis2010,Dis2011,Dis2012,Dis2013,Dis2014,Dis2015,Dis2016,Dis2017,Dis2018,Dis2019,Dis2020,Dis2021)
 totalDisability <- totalDisability %>% arrange(county)
 colnames(totalDisability) <- c("year","county","percent_disabled")
 ```
 
-### Clean Up Unemployment 2010-2021
-```{r}
+### Clean Up Unemployment & Income Data
+
+The financial data we used was sourced from from data.ca.gov and consisted of two different data sets containing information on unemployment and median income in California. Both of these data sets were relatively clean, thus the wrangling process was fairly simple. For the unemployment data, we filtered the data to select only California counties and the years 2010-2021. We then calculated the means for each county during each year because we were given multiple data points for each county-year combination. 
+  
+The median income data was cleaned in a similar fashion. Cleaning processes unique to this data set included removing unnecessary counties from the "county" column, and merging the income data with our main data frame from 2010-2020 rather than 2010-2021. This was because our income data did not contain any information from 2021.
+
+```{r warning=F,message=F,echo=F}
 UnemploymentData <- unemploymentdataraw%>%
   filter(area_type=="County", status_preliminary_final=="Final")%>%
   filter(year>=2010 & year<2022)%>%
@@ -242,8 +247,7 @@ UnemploymentData <- unemploymentdataraw%>%
   rename("county"="area_name")
 ```
 
-### Clean Up Income 2010-2020
-```{r}
+```{r warning=F,message=F,echo=F}
 IncomeData <- incomedataraw%>%
   filter(taxable_year >= 2010 & taxable_year <= 2021)%>%
   filter(!county %in% c("Nonresident","Resident Out of State County","Unallocated","Resident Out of State County","Nonresident20 County","Resident Out-of-State19 County","Resident Out-of-State County"))%>%
@@ -255,7 +259,7 @@ IncomeData <- IncomeData[,c(1,2,6)]
 ```
 
 ### Final CSV
-```{r warning=F,message=F}
+```{r warning=F,message=F,echo=F}
 majorDF <- FeedData %>% full_join(totalDisability)
 majorDF <- majorDF %>% full_join(UnemploymentData)
 majorDF <- majorDF %>% full_join(IncomeData)
@@ -268,46 +272,15 @@ majorDF2019 <- TailAge2019 %>% inner_join(majorDF2019)
 
 # Analysis
 
-## Data Visualization
+## Data Visualization - Yearly Trend Graphs
 
-### Age Demographics 2019 GGpair
-```{r warning=F,message=F}
-ggpairs(majorDF2019[,c(6,3,4)],
-        columnLabels=c("Food Insecurity Rate (%)","Population <18 Rate (%)","Population >65 Rate (%)"),
-        aes(fill="Food Insecurity",col="Food Insecurity"),
-        title = "Scatterplot Matrix of Age Demographics, 2019") +
-  scale_fill_manual(values=c("#4E5745"))+
-  scale_color_manual(values=c("#4E5745"))+
-  theme(strip.background = element_rect(fill = "#AC5B4C"), panel.background=element_rect(fill="#E5DACF",color="#E5DACF", size=0.5,linetype="solid"),
-        panel.grid.minor = element_blank())
-```
-
-### Disability Demographics 2019 GGpair
-```{r warning=F,message=F}
-ggpairs(majorDF2019[,c(6,7)],
-        columnLabels=c("Food Insecurity Rate (%)","Percent Disabled Rate (%)"),
-        aes(fill="Food Insecurity",col="Food Insecurity"),
-        title = "Scatterplot Matrix of Disability Demographics, 2019") +
-  scale_fill_manual(values=c("#4E5745"))+
-  scale_color_manual(values=c("#4E5745"))+
-  theme(strip.background = element_rect(fill = "#AC5B4C"), panel.background=element_rect(fill="#E5DACF",color="#E5DACF", size=0.5,linetype="solid"),
-        panel.grid.minor = element_blank())
-```
-
-### Income Demographics 2019 GGpair
-```{r warning=F,message=F}
-ggpairs(majorDF2019[,c(6,9,8)],
-        columnLabels=c("Food Insecurity Rate (%)","Median Income","Unemployment Rate (%)"),
-        aes(fill="Food Insecurity",col="Food Insecurity"),
-        title = "Scatterplot Matrix of Financial Demographics, 2019") +
-  scale_fill_manual(values=c("#4E5745"))+
-  scale_color_manual(values=c("#4E5745"))+
-  theme(strip.background = element_rect(fill = "#AC5B4C"), panel.background=element_rect(fill="#E5DACF",color="#E5DACF", size=0.5,linetype="solid"),
-        panel.grid.minor = element_blank())
-```
+The second part of our preliminary findings from data exploration consisted of visualizing how overall food insecurity rate and our determining factors changed over the years. For these visualizations, we used yearly boxplots to show the inter-quantile range of each variable during each year. Through these plots, we're able to gain some extra insights as to what we would expect from the the relationships between our determining factors and food insecurity rate. This ultimately allows us to understand how to use statistical models to forecast food insecurity rate. 
 
 ### Food Insecurity Boxplot
-```{r}
+
+Starting with the yearly food insecurity rate, we notice that there is a general downturn in food insecurity each year from 2010-2019. We also notice that this downturn is disrupted in 2020 where the food insecurity rate stays relatively the same as the previous year. The downward trend then is seen to be continued as expected in 2021. 
+
+```{r warning=F,message=F,echo=F}
 majorDF[,c(1,3)] %>%
   mutate(year=as.factor(year))%>%
   ggplot(aes(x=year, y=overall_food_insecurity_rate, fill=(year==c(2020,2021)))) +
@@ -318,32 +291,11 @@ majorDF[,c(1,3)] %>%
   labs(title="Overall Food Insecurity Rate per Year",x="Year",y="Food Insecurity Rate (%)")
 ```
 
-## Disability Boxplot
-```{r}
-majorDF[,c(1,4)] %>%
-  mutate(year=as.factor(year))%>%
-  ggplot(aes(x=year, y=percent_disabled, fill=(year==2020|year==2021))) +
-  geom_boxplot(show.legend = F)+
-  scale_fill_manual(values=c("#4E5745","#AC5B4C"))+
-  theme_minimal()+
-  theme(panel.background=element_rect(fill="#E5DACF",color="#E5DACF",size=0.5,linetype="solid"))+
-  labs(title="Overall Disability Rate per Year",x="Year",y="Disability Rate (%)")
-```
-
-### Unemployment Boxplot
-```{r}
-majorDF[,c(1,5)] %>%
-  mutate(year=as.factor(year))%>%
-  ggplot(aes(x=year, y=unemployment_rate_avg, fill=(year==2020 | year==2021))) +
-  geom_boxplot(show.legend = F)+
-  scale_fill_manual(values=c("#4E5745","#AC5B4C"))+
-  theme_minimal()+
-  theme(panel.background=element_rect(fill="#E5DACF",color="#E5DACF",size=0.5,linetype="solid"))+
-  labs(title="Overall Unemployment Rate per Year",x="Year",y="Unemployment Rate (%)")
-```
-
 ### Income Boxplot
-```{r}
+
+When performing the same visualizations for median income, we observe a similar phenomenon as the food insecurity rate. Here, we notice an upward trend in median income from 2010-2019 followed by a disruption in 2020 where the IQR remains similar to the previous year. While this provides evidence that median income would be useful in forecasting food insecurity, our predictions based on this may be disrupted by the outliers shown in the graph. These outliers are likely the median income for counties with higher income job opportunities.
+
+```{r warning=F,message=F,echo=F}
 majorDF[,c(1,6)]%>%
   mutate(year=as.factor(year))%>%
   ggplot(aes(x=year, y=median_income, fill=(year==2020))) +
@@ -354,60 +306,30 @@ majorDF[,c(1,6)]%>%
   labs(title="Overall Median Income per Year",x="Year",y="Median Income ($)")
 ```
 
-### 2019 Map Set-up
-```{r warning=F,message=F}
-shape <- sf::read_sf(dsn = "CA_Counties_ShapeFile", layer = "CA_Counties_TIGER2016")
-counties <- shape['NAME'] %>% arrange(NAME)
-colnames(counties)[1] <- "county"
+### Unemployment Boxplot
 
-majorDF2019$county <- gsub(" County","",majorDF2019$county)
-counties <- counties %>% full_join(majorDF2019)
-```
+The box plot for unemployment rate in California shows a trend similar to the previous disability rate graph. Here we observe a large downturn in the unemployment rate from 2010-2019, however, we see a large increase in unemployment rate in 2020. This is likely caused by the lock down issued in 2020 where many people were no longer able to attend their jobs. This inconsistency may make predicting food insecurity in 2020 less accurate.
 
-### 2019 Map Execution
-```{r warning=F,message=F}
-map <- mapview(
-  counties,
-  zcol = "overall_food_insecurity_rate",
-  layer.name = "Food Insecurity Rate (%)",
-  map.types = "CartoDB.Positron",
-  na.color = "#AC5B4C",
-  col.regions = brewer.pal(100, "Blues"),
-  alpha.regions = 1
-) +
-  mapview(
-    counties,
-    zcol = "unemployment_rate_avg",
-    layer.name = "Unemployment Rate (%)",
-    map.types = "CartoDB.Positron",
-    na.color = "#AC5B4C",
-    col.regions = brewer.pal(100, "Blues"),
-    alpha.regions = 1
-  ) +
-  mapview(
-    counties,
-    zcol = "median_income",
-    layer.name = "Median Income",
-    map.types = "CartoDB.Positron",
-    na.color = "#AC5B4C",
-    col.regions = brewer.pal(100, "Blues"),
-    alpha.regions = 1
-  ) +
-  mapview(
-    counties,
-    zcol = "percent_disabled",
-    layer.name = "Disability Rate (%)",
-    map.types = "CartoDB.Positron",
-    na.color = "#AC5B4C",
-    col.regions = brewer.pal(100, "Blues"),
-    alpha.regions = 1
-  )
+```{r warning=F,message=F,echo=F}
+majorDF[,c(1,5)] %>%
+  mutate(year=as.factor(year))%>%
+  ggplot(aes(x=year, y=unemployment_rate_avg, fill=(year==2020 | year==2021))) +
+  geom_boxplot(show.legend = F)+
+  scale_fill_manual(values=c("#4E5745","#AC5B4C"))+
+  theme_minimal()+
+  theme(panel.background=element_rect(fill="#E5DACF",color="#E5DACF",size=0.5,linetype="solid"))+
+  labs(title="Overall Unemployment Rate per Year",x="Year",y="Unemployment Rate (%)")
 ```
 
 ## Modeling
 
+We began our modeling process by  fitting linear regression models to all three of our predictors. The general purpose behind these visualizations was for us to get a better idea of the relationship between our predictors and food insecurity rate as we will not be able to visualize them all together in a multivariate linear model. 
+
 ### Food Insecurity vs. Disability Linear Model
-```{r}
+
+When fitting disability rate to food insecurity, we observe that the two variables have a slight positive relationship. This relationship may have innacuracies in predicting food insecurity for different counties due to the variability across each county. Fitting a model to each county individually may increase the accuracy of a multivariate model including disability rate as a predictor.
+
+```{r warning=F,message=F,echo=F}
 majorDF%>%
   ggplot(aes(x=percent_disabled, y=overall_food_insecurity_rate))+
   geom_point(color="#4E5745")+
@@ -415,13 +337,15 @@ majorDF%>%
   theme_minimal()+
   theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Relationship Between FI and Disability Rate",
-       subtitle="lm(food_insecurity_rate ~ disability_rate)",
        x="Disability Rate (%)",
        y="Food Insecurity Rate (%)")
 ```
 
 ### Food Insecurity vs. Median Income Linear Model
-```{r}
+
+When fitting median income to food insecurity, we observe that the two variables have a negative relationship. This relationship is better defined in comparison to the disability rate model, however, the large number of data points in the \$30000-\$40000 range may make it difficult to accurately predict the food insecurity rate for counties with a median income within that range.
+
+```{r warning=F,message=F,echo=F}
 majorDF%>%
   ggplot(aes(x=median_income, y=overall_food_insecurity_rate))+
   geom_point(color="#4E5745")+
@@ -429,13 +353,15 @@ majorDF%>%
   theme_minimal()+
   theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Relationship Between FI and Median Income",
-       subtitle="lm(food_insecurity_rate ~ median_income)",
        x="Median Income ($)",
        y="Food Insecurity Rate (%)")
 ```
 
 ### Food Insecurity vs. Unemployment Linear Model
-```{r}
+
+When fitting unemployment rate to food insecurity, we observe that the two variables have a positive relationship. This model has the same concern as the median income model as counties lying in the 0-10% unemployment rate may be innaccurately estemated due to their variability. Due to the concerns of all three of these linear models, we decided to fit our predictive models for both all counties and for each county individually to compare the accuracy of each.  
+
+```{r warning=F,message=F,echo=F}
 majorDF%>%
   ggplot(aes(x=unemployment_rate_avg, y=overall_food_insecurity_rate))+
   geom_point(color="#4E5745")+
@@ -443,21 +369,19 @@ majorDF%>%
   theme_minimal()+
   theme(panel.background = element_rect(fill="#E5DACF", color = "#E5DACF", size = 0.5, linetype = "solid"))+
   labs(title="Relationship Between FI and Unemployment Rate",
-       subtitle="lm(food_insecurity_rate ~ unemployment_rate_avg)",
        x="Unemployment Rate (%)",
        y="Food Insecurity Rate (%)")
 ```
 
-### AIC 
-```{r warning=F,message=F}
-none_mod <- lm(overall_food_insecurity_rate~1,data=na.omit(majorDF)) ##model with only intercept
-full_mod <- lm(overall_food_insecurity_rate~unemployment_rate_avg+median_income+percent_disabled,data=na.omit(majorDF))
+### Predictive Models
 
-stepAIC(none_mod, scope=list(upper=full_mod, lower = ~1), direction="both", k=2)
-```
+We decided to use two approaches to predicting food insecurity based on our predictive variables to compare which model performed best. The first model we used was an additive linear model which fit unemployment rate, disability rate, and median income together to food insecurity. We chose this model because we observed linear relationships between all three of our predictors and food insecurity. This model was also relatively simple to implement. The second model we used was a random forest model using the same formula as the additive linear model. This model was chosen as a means of reducing the variance in our data, which should increase the accuracy of our predictions. 
 
-### [Overall against 2020] Linear Model: Food Insecurity ~ Unemployment Rate + Disability Rate + Median Income
-```{r warning=FALSE, message=FALSE}
+When selecting our test data, we decided to test against both 2019 and 2020 data. This was done in consideration of the trend disruptions between values in 2019 and 2020 for all of our predictors. The expectation from this was that the predictive models would have better accuracy in predicting food insecurity for 2019 than for 2020. Thus, for our training data we used data between 2010-2018 and 2010-2019, with each being tested against 2019 and 2020 respectively. 
+
+Lastly, to further address the concerns brought up in the discussion of our single factor linear models, we wrote our predictive models using both data points regardless of county and models fit for each county individually. The expectation from this was that the models fit for each county would be significantly more accurate due to accounting for each county's individual trends. Our only concern from this was not having sufficient data points to fit these models towards. 
+
+```{r warning=F,message=F,echo=F}
 # Define Training Data (2010-2019) and Test Data (2020)
 majorDFtrain <- na.omit(majorDF)%>%
   filter(year<2020)
@@ -478,8 +402,7 @@ lm_results <- data.frame(
 lm_overall_acc20 <- 1 - mean((abs(lm_results$predicted_food_insecurity_rate-lm_results$actual_food_insecurity_rate))/lm_results$actual_food_insecurity_rate)
 ```
 
-### [Overall against 2019] Linear Model: Food Insecurity ~ Unemployment Rate + Disability Rate + Median Income
-```{r warning=FALSE, message=FALSE}
+```{r warning=F,message=F,echo=F}
 # Define Training Data (2010-2019) and Test Data (2019)
 majorDFtrain <- na.omit(majorDF)%>%
   filter(year<2019)
@@ -500,8 +423,7 @@ lm_results <- data.frame(
 lm_overall_acc19 <- 1 - mean((lm_results$predicted_food_insecurity_rate-lm_results$actual_food_insecurity_rate)/lm_results$actual_food_insecurity_rate)
 ```
 
-### [Overall against 2020] Random Forest Model: Food Insecurity ~ Unemployment Rate + Disability Rate + Median Income
-```{r warning=FALSE, message=FALSE}
+```{r warning=F,message=F,echo=F}
 # Define Training Data (2010-2019) and Test Data (2020)
 majorDFtrain <- na.omit(majorDF)%>%
   filter(year<2020)
@@ -522,8 +444,7 @@ rf_results <- data.frame("county"=majorDFtest$county,
 rf_overall_acc20 <- 1 - mean((rf_results$predicted_food_insecurity_rate-rf_results$actual_food_insecurity_rate)/rf_results$actual_food_insecurity_rate)
 ```
 
-### [Overall against 2019] Random Forest Model: Food Insecurity ~ Unemployment Rate + Disability Rate + Median Income
-```{r warning=FALSE, message=FALSE}
+```{r warning=F,message=F,echo=F}
 # Define Training Data (2010-2019) and Test Data (2020)
 majorDFtrain <- na.omit(majorDF)%>%
   filter(year<2019)
@@ -544,8 +465,7 @@ rf_results <- data.frame("county"=majorDFtest$county,
 rf_overall_acc19 <- 1 - mean((rf_results$predicted_food_insecurity_rate-rf_results$actual_food_insecurity_rate)/rf_results$actual_food_insecurity_rate)
 ```
 
-### [By county against 2019,2020] Linear Model: Food Insecurity ~ Unemployment Rate + Disability Rate + Median Income
-```{r}
+```{r warning=F,message=F,echo=F}
 lm_trainr <- function(c,y) {
   # Define Training Data (2010-2019) and Test Data (2020)
   majorDFtrain <- na.omit(majorDF) %>%
@@ -575,9 +495,10 @@ lm_trainr <- function(c,y) {
   
   lm_results <- data.frame(
     "county" = majorDFtrain$county,
-    "predicted_food_insecurity_rate" = as.numeric(model$coefficients[1]) + as.numeric(model$coefficients[2]) *
-      majorDFtrain$unemployment_rate_avg + as.numeric(model$coefficients[3]) *
-      majorDFtrain$percent_disabled + as.numeric(model$coefficients[4]) * majorDFtrain$median_income,
+    "predicted_food_insecurity_rate" = as.numeric(model$coefficients[1]) + 
+      as.numeric(model$coefficients[2]) *  majorDFtrain$unemployment_rate_avg + 
+      as.numeric(model$coefficients[3]) * majorDFtrain$percent_disabled + 
+      as.numeric(model$coefficients[4]) * majorDFtrain$median_income,
     "actual_food_insecurity_rate" = majorDFtrain$overall_food_insecurity_rate
   )
   
@@ -616,8 +537,7 @@ for (c in unique(majorDF$county)){
 lm_county_acc19 <- mean(accuracy19, na.rm=T)
 ```
 
-### [By county against 2019,2020] Linear Model: Food Insecurity ~ Unemployment Rate + Disability Rate + Median Income
-```{r warning=F}
+```{r warning=F,message=F,echo=F}
 rf_trainr <- function(c,y) {
   # Define Training Data (2010-2019) and Test Data (2020)
   majorDFtrain <- na.omit(majorDF) %>%
@@ -689,7 +609,10 @@ rf_county_acc19 <- mean(accuracy19, na.rm=T)
 ```
 
 ### Predictive Model Results
-```{r}
+
+After fitting our models and calculating their accuracy, we found that the general predictions for food insecurity in 2019 was more accurate than our predictions for 2020. This again, was likely due to data in 2019 following the same general trend as previous years, while data in 2020 having a disruption to that trend. When comparing within test groups, we find that the overall random forest model and by county linear model performed the best when testing against the 2019 data, with the random forest performing slightly better. When testing against the 2020 data, we found that fitting the random forest model by county performed significantly better than the other models tested against 2020.
+
+```{r warning=F,message=F,echo=F}
 kable(data.frame("Model Type"=c("Overall Linear Regression", "Overall Random Forest",
                                 "By County Linear Model", "By County Random Forest"),
                  "Test Accuracy 2019"=c(lm_overall_acc19, rf_overall_acc19, 
@@ -699,3 +622,9 @@ kable(data.frame("Model Type"=c("Overall Linear Regression", "Overall Random For
 ```
 
 # Conclusion
+
+
+## R Appendix 
+
+```{r, ref.label=knitr::all_labels(), eval = F, echo = T}
+```
